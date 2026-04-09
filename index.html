@@ -1,0 +1,2494 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR ProMaker v4 — ระบบสร้าง QR Code มืออาชีพ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════════════════
+   DESIGN SYSTEM — Royal Government v4
+   ═══════════════════════════════════════════════════ */
+:root{
+  --navy:#0d2137; --navy-mid:#163352; --navy-light:#1e4976;
+  --blue:#2563a8; --blue-light:#3a7bc8;
+  --gold:#c9a227; --gold-light:#e5bb40; --gold-pale:#f5e9c0;
+  --white:#fff; --gray-50:#f9fafb; --gray-100:#f0f2f5;
+  --gray-200:#dde2ea; --gray-400:#9aa3af; --gray-600:#5a6472; --gray-800:#2d3540;
+  --red:#c0392b; --green:#1a7a4a; --orange:#d35400;
+  --shadow-sm:0 1px 3px rgba(13,33,55,.12);
+  --shadow-md:0 4px 16px rgba(13,33,55,.14);
+  --shadow-lg:0 8px 32px rgba(13,33,55,.18);
+  --shadow-xl:0 16px 48px rgba(13,33,55,.22);
+  --r:8px; --rl:14px; --tr:all .22s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Sarabun',sans-serif;font-size:15px;line-height:1.65;color:var(--gray-800);background:var(--gray-100);min-height:100vh}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 60%,var(--navy-light) 100%);border-bottom:3px solid var(--gold);padding:0 28px;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-lg)}
+.hdr-brand{display:flex;align-items:center;gap:12px}
+.hdr-logo{width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(201,162,39,.4);flex-shrink:0}
+.hdr-title{font-size:18px;font-weight:700;color:var(--white);letter-spacing:.02em}
+.hdr-title span{color:var(--gold-light)}
+.hdr-badge{font-size:10px;font-weight:700;background:var(--gold);color:var(--navy);padding:2px 7px;border-radius:4px;letter-spacing:.04em}
+.hdr-nav{display:flex;align-items:center;gap:4px}
+.nav-btn{padding:7px 15px;border-radius:6px;font-size:14px;font-weight:500;font-family:'Sarabun',sans-serif;cursor:pointer;transition:var(--tr);border:none;color:rgba(255,255,255,.75);background:transparent;display:flex;align-items:center;gap:5px}
+.nav-btn:hover{background:rgba(255,255,255,.1);color:var(--white)}
+.nav-btn.active{background:var(--gold);color:var(--navy);font-weight:700;box-shadow:0 2px 8px rgba(201,162,39,.35)}
+
+/* LAYOUT */
+.app{max-width:1200px;margin:0 auto;padding:28px 20px 60px}
+.view{display:none}.view.active{display:block}
+
+/* PAGE HEADER */
+.ph{display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--gray-200)}
+.ph-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 100%);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:var(--shadow-md);flex-shrink:0}
+.ph h1{font-size:22px;font-weight:700;color:var(--navy)}
+.ph p{font-size:13px;color:var(--gray-600);margin-top:1px}
+
+/* GRID */
+.cgrid{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start}
+@media(max-width:860px){.cgrid{grid-template-columns:1fr}}
+
+/* CARD */
+.card{background:var(--white);border-radius:var(--rl);border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);overflow:hidden}
+.card-hdr{padding:15px 22px;background:linear-gradient(90deg,var(--navy) 0%,var(--navy-mid) 100%);display:flex;align-items:center;gap:10px}
+.card-step{width:26px;height:26px;background:var(--gold);color:var(--navy);border-radius:50%;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-hdr h2{font-size:15px;font-weight:700;color:var(--white);letter-spacing:.01em}
+.card-body{padding:22px}
+
+/* MODE TABS */
+.mtabs{display:flex;gap:0;background:var(--gray-100);border-radius:var(--r);padding:4px;margin-bottom:20px}
+.mtab{flex:1;padding:9px 8px;border-radius:6px;border:none;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:var(--tr);color:var(--gray-600);background:transparent;display:flex;align-items:center;justify-content:center;gap:5px}
+.mtab:hover{color:var(--navy)}
+.mtab.active{background:var(--white);color:var(--navy);box-shadow:var(--shadow-sm);border:1px solid var(--gray-200)}
+
+/* TYPE BTNS */
+.tgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:20px}
+.tbtn{padding:12px 4px;border-radius:var(--r);border:2px solid var(--gray-200);background:var(--gray-50);cursor:pointer;transition:var(--tr);display:flex;flex-direction:column;align-items:center;gap:6px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:500;color:var(--gray-600)}
+.tbtn:hover{border-color:var(--blue-light);background:#eef4fb;color:var(--blue)}
+.tbtn.active{border-color:var(--navy);background:var(--navy);color:var(--gold-light);box-shadow:var(--shadow-md)}
+.tbtn-icon{font-size:20px}
+
+/* FIELDS */
+.field{margin-bottom:16px}.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:6px}
+.field label .req{color:var(--red);margin-left:3px}
+.field input,.field select,.field textarea{width:100%;padding:10px 14px;border:1.5px solid var(--gray-200);border-radius:var(--r);font-size:14px;font-family:'Sarabun',sans-serif;color:var(--gray-800);background:var(--white);transition:var(--tr);outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,168,.12)}
+.field textarea{resize:vertical;min-height:88px}
+.field input[type="color"]{padding:4px 6px;height:42px;cursor:pointer}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dform{display:none}.dform.active{display:block}
+
+/* LOGO UPLOAD SECTION */
+.logo-section{border:1.5px dashed var(--gray-200);border-radius:var(--rl);overflow:hidden;transition:var(--tr)}
+.logo-section:hover{border-color:var(--gold)}
+.logo-hdr{padding:12px 18px;background:var(--gray-50);display:flex;align-items:center;justify-content:space-between}
+.logo-hdr-title{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px}
+.logo-body{padding:16px 18px}
+.logo-preview-wrap{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.logo-thumb{width:72px;height:72px;border-radius:10px;border:2px solid var(--gray-200);background:var(--gray-50);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;font-size:28px;color:var(--gray-400)}
+.logo-thumb img{width:100%;height:100%;object-fit:contain}
+.logo-drop-zone{position:relative;border:2px dashed var(--gray-200);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;transition:var(--tr);background:var(--white);flex:1}
+.logo-drop-zone:hover,.logo-drop-zone.drag-over{border-color:var(--gold);background:#fdf8ed}
+.logo-drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.logo-drop-label{font-size:12px;color:var(--gray-600);pointer-events:none}
+.logo-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo-size-label{font-size:13px;font-weight:600;color:var(--gray-800);white-space:nowrap}
+.logo-size-input{width:100px}
+.logo-note{font-size:11px;color:var(--gray-400);margin-top:10px;line-height:1.6}
+
+/* FILE UPLOAD ZONE */
+.upzone{border:2.5px dashed var(--gray-200);border-radius:var(--rl);padding:32px 20px;text-align:center;cursor:pointer;transition:var(--tr);background:var(--gray-50);position:relative}
+.upzone:hover,.upzone.drag-over{border-color:var(--blue);background:#eef4fb}
+.upzone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.up-icon{font-size:40px;margin-bottom:10px;opacity:.6}
+.up-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:5px}
+.up-sub{font-size:12px;color:var(--gray-600);line-height:1.6}
+.up-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin-top:12px}
+.chip{font-size:11px;font-weight:600;padding:3px 9px;border-radius:4px;font-family:'IBM Plex Mono',monospace}
+.chip-d{background:#dbeafe;color:#1e40af}.chip-s{background:#d1fae5;color:#065f46}
+.chip-i{background:#fce7f3;color:#9d174d}.chip-p{background:#fee2e2;color:#991b1b}
+.chip-t{background:#f3f4f6;color:#374151}.chip-o{background:#ede9fe;color:#5b21b6}
+
+.fprev{display:none;border:1.5px solid var(--gray-200);border-radius:var(--rl);overflow:hidden;margin-top:14px}
+.fprev.visible{display:block}
+.fprev-hdr{padding:11px 16px;background:linear-gradient(90deg,var(--navy),var(--navy-mid));display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fprev-name{font-size:13px;font-weight:600;color:var(--white);display:flex;align-items:center;gap:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fprev-meta{font-size:11px;color:rgba(255,255,255,.6);white-space:nowrap}
+.fprev-body{padding:14px;background:var(--white);max-height:260px;overflow-y:auto;font-size:13px;line-height:1.7}
+.fprev-body pre{white-space:pre-wrap;word-break:break-word;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.fprev-body img{max-width:100%;border-radius:var(--r)}
+.extract-bar{display:none;padding:12px 16px;background:var(--gray-50);border-top:1px solid var(--gray-200);gap:8px;flex-wrap:wrap;align-items:center}
+.extract-bar.visible{display:flex}
+.ext-lbl{font-size:13px;font-weight:600;color:var(--gray-800);flex-shrink:0}
+
+/* BATCH */
+.batch-list{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+.bi{display:flex;align-items:center;gap:10px;padding:9px 13px;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--r);transition:var(--tr)}
+.bi:hover{border-color:var(--blue-light)}
+.bi-data{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bi-num{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;background:var(--gold-pale);color:var(--navy);padding:2px 7px;border-radius:4px;border:1px solid var(--gold);flex-shrink:0}
+.bi-chk{width:16px;height:16px;cursor:pointer;flex-shrink:0;accent-color:var(--navy)}
+
+.prog-wrap{margin-top:14px}
+.prog-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--gray-600);margin-bottom:6px}
+.prog-bg{height:8px;background:var(--gray-200);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--navy),var(--gold));border-radius:4px;transition:width .3s ease;width:0%}
+
+/* PRESETS */
+.presets{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.pset{width:32px;height:32px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:var(--tr)}
+.pset:hover,.pset.active{border-color:var(--navy);transform:scale(1.1)}
+
+/* PREVIEW CARD */
+.pcard{position:sticky;top:90px}
+.pqr-wrap{display:flex;align-items:center;justify-content:center;padding:24px;background:var(--gray-50);position:relative;min-height:200px}
+.prev-empty{text-align:center;padding:36px 20px;color:var(--gray-400)}
+.prev-empty-icon{font-size:46px;opacity:.35;margin-bottom:10px}
+.prev-empty-text{font-size:13px}
+.prev-meta{padding:13px 22px;background:var(--gray-50);border-top:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between}
+.refcode{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;background:var(--gold-pale);color:var(--navy);padding:4px 10px;border-radius:5px;border:1px solid var(--gold)}
+.prev-type{font-size:12px;color:var(--gray-600)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:var(--r);font-size:14px;font-weight:600;font-family:'Sarabun',sans-serif;cursor:pointer;transition:var(--tr);border:none;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 100%);color:var(--white);box-shadow:0 4px 14px rgba(13,33,55,.28)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(13,33,55,.38)}
+.btn-gold{background:linear-gradient(135deg,var(--gold) 0%,var(--gold-light) 100%);color:var(--navy);box-shadow:0 4px 14px rgba(201,162,39,.28)}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,162,39,.38)}
+.btn-ol{background:transparent;border:1.5px solid var(--gray-200);color:var(--gray-600)}
+.btn-ol:hover{border-color:var(--navy);color:var(--navy);background:var(--gray-50)}
+.btn-red{background:var(--red);color:var(--white)}.btn-red:hover{background:#a93226}
+.btn-sm{padding:7px 13px;font-size:13px}
+.btn-full{width:100%;justify-content:center}
+.btn:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
+.astack{display:flex;flex-direction:column;gap:9px;padding:15px 22px;border-top:1px solid var(--gray-200)}
+
+/* STATS BAR */
+.sbar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+@media(max-width:700px){.sbar{grid-template-columns:repeat(2,1fr)}}
+.scard{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--rl);padding:15px 18px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm);transition:var(--tr)}
+.scard:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.sicon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.si-navy{background:linear-gradient(135deg,var(--navy),var(--blue))}
+.si-gold{background:linear-gradient(135deg,#b8861e,var(--gold-light))}
+.si-green{background:linear-gradient(135deg,#0f4d2e,var(--green))}
+.si-orange{background:linear-gradient(135deg,#8b2500,var(--orange))}
+.sval{font-size:26px;font-weight:800;color:var(--navy);line-height:1}
+.slbl{font-size:11px;color:var(--gray-600);margin-top:2px}
+
+/* HISTORY TABLE */
+.htoolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.searchbox{display:flex;align-items:center;gap:8px;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--r);padding:8px 13px;flex:1;max-width:320px}
+.searchbox input{border:none;outline:none;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--gray-800);width:100%;background:transparent}
+.twrap{overflow-x:auto;border-radius:var(--rl);border:1px solid var(--gray-200);box-shadow:var(--shadow-sm)}
+table{width:100%;border-collapse:collapse;background:var(--white);font-size:14px}
+thead tr{background:linear-gradient(90deg,var(--navy),var(--navy-mid))}
+thead th{padding:12px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--gold-light);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--gray-100);transition:var(--tr)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--gray-50)}
+tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.b-blue{background:#dbeafe;color:#1e40af}.b-teal{background:#d1fae5;color:#065f46}
+.b-amber{background:#fef3c7;color:#92400e}.b-purple{background:#ede9fe;color:#5b21b6}
+.b-pink{background:#fce7f3;color:#9d174d}.b-gray{background:#f3f4f6;color:#374151}
+.b-orange{background:#ffedd5;color:#9a3412}
+.refcode-sm{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;background:var(--gold-pale);color:var(--navy);padding:2px 7px;border-radius:4px;border:1px solid var(--gold)}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--gray-400)}
+.empty-icon{font-size:52px;opacity:.28;margin-bottom:12px}
+.empty h3{font-size:17px;color:var(--gray-600);margin-bottom:5px}
+.empty p{font-size:13px}
+
+/* SETTINGS */
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+.ssec-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.ssec-title::after{content:'';flex:1;height:1px;background:var(--gray-200)}
+.si-box{display:flex;align-items:center;gap:8px;padding:10px 13px;border-radius:var(--r);font-size:13px}
+.si-ok{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+.si-err{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.si-info{background:#dbeafe;color:#1e3a8a;border:1px solid #bfdbfe}
+.si-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(13,33,55,.6);backdrop-filter:blur(4px);z-index:400;align-items:center;justify-content:center;padding:20px}
+.modal-ov.visible{display:flex}
+.modal{background:var(--white);border-radius:var(--rl);box-shadow:var(--shadow-xl);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;animation:min .25s ease}
+@keyframes min{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+.modal-hdr{padding:17px 22px;background:linear-gradient(90deg,var(--navy),var(--navy-mid));display:flex;align-items:center;justify-content:space-between}
+.modal-hdr h3{font-size:15px;font-weight:700;color:var(--white)}
+.modal-close{background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;line-height:1}
+.modal-close:hover{color:var(--white)}
+.modal-body{padding:22px}
+.batch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:14px}
+.bgi{border:1px solid var(--gray-200);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.bgi canvas{width:100%!important;height:auto!important}
+.bgi-lbl{padding:5px 7px;font-size:10px;text-align:center;border-top:1px solid var(--gray-200);background:var(--gray-50);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* TOAST */
+.tcon{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:9px;pointer-events:none}
+.toast{padding:13px 17px;border-radius:var(--r);font-size:14px;font-weight:500;max-width:340px;display:flex;align-items:flex-start;gap:9px;box-shadow:var(--shadow-xl);pointer-events:all;animation:tin .3s ease}
+.t-ok{background:var(--navy);color:var(--white);border-left:4px solid var(--gold)}
+.t-err{background:#7f1d1d;color:var(--white);border-left:4px solid #ef4444}
+.t-info{background:#1e3a8a;color:var(--white);border-left:4px solid #60a5fa}
+@keyframes tin{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+
+/* LOADER */
+.ldr-ov{display:none;position:fixed;inset:0;background:rgba(13,33,55,.55);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+.ldr-ov.on{display:flex}
+.ldr-spin{width:48px;height:48px;border:4px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+.ldr-txt{color:var(--white);font-size:15px;font-weight:500}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── UPLOAD TO DRIVE VIEW ────────────────────────────── */
+.udrop-zone{
+  border:3px dashed var(--gray-200);border-radius:var(--rl);
+  padding:48px 24px;text-align:center;cursor:pointer;
+  transition:var(--tr);background:var(--white);position:relative;
+  min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.udrop-zone:hover,.udrop-zone.drag-over{
+  border-color:var(--gold);background:#fdf8ed;
+  box-shadow:0 0 0 4px rgba(201,162,39,.1);
+}
+.udrop-zone.has-files{border-color:var(--green);background:#f0faf4;}
+.udrop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.udrop-icon{font-size:52px;margin-bottom:14px;transition:var(--tr)}
+.udrop-zone:hover .udrop-icon{transform:scale(1.08)}
+.udrop-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.udrop-sub{font-size:13px;color:var(--gray-600);line-height:1.7}
+.udrop-limit{font-size:12px;color:var(--gray-400);margin-top:10px}
+
+/* File queue list */
+.fqueue{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.fq-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;background:var(--white);
+  border:1.5px solid var(--gray-200);border-radius:var(--r);
+  transition:var(--tr);
+}
+.fq-item.uploading{border-color:var(--gold);background:#fdf8ed}
+.fq-item.done{border-color:var(--green);background:#f0faf4}
+.fq-item.error{border-color:var(--red);background:#fef2f2}
+.fq-icon{font-size:24px;flex-shrink:0;width:36px;text-align:center}
+.fq-info{flex:1;min-width:0}
+.fq-name{font-size:13px;font-weight:600;color:var(--gray-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fq-meta{font-size:11px;color:var(--gray-400);margin-top:2px}
+.fq-status{flex-shrink:0;font-size:12px;font-weight:600;text-align:right}
+.fq-status.uploading{color:var(--gold)}
+.fq-status.done{color:var(--green)}
+.fq-status.error{color:var(--red)}
+.fq-remove{background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;transition:var(--tr);flex-shrink:0}
+.fq-remove:hover{background:var(--red);color:var(--white)}
+
+/* QR result card */
+.qr-result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:16px}
+.qr-result-card{
+  background:var(--white);border:1.5px solid var(--gray-200);
+  border-radius:var(--rl);overflow:hidden;
+  box-shadow:var(--shadow-sm);transition:var(--tr);
+  display:flex;flex-direction:column;
+}
+.qr-result-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.qr-result-canvas-wrap{
+  padding:16px;background:var(--gray-50);
+  display:flex;align-items:center;justify-content:center;
+}
+.qr-result-canvas-wrap canvas{max-width:160px;border-radius:4px;box-shadow:var(--shadow-sm)}
+.qr-result-body{padding:12px 14px;border-top:1px solid var(--gray-100);flex:1;display:flex;flex-direction:column;gap:8px}
+.qr-result-name{font-size:13px;font-weight:600;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qr-result-links{display:flex;flex-direction:column;gap:5px}
+.qr-result-links a{
+  font-size:12px;display:flex;align-items:center;gap:5px;
+  padding:5px 10px;border-radius:5px;text-decoration:none;font-weight:600;
+  transition:var(--tr);
+}
+.lnk-view{background:#dbeafe;color:#1e40af}.lnk-view:hover{background:#1e40af;color:#fff}
+.lnk-dl{background:#d1fae5;color:#065f46}.lnk-dl:hover{background:#065f46;color:#fff}
+.qr-result-dl{margin-top:4px}
+
+/* Upload progress overall */
+.up-overall-prog{
+  background:var(--white);border:1.5px solid var(--gray-200);
+  border-radius:var(--rl);padding:20px 22px;margin-top:16px;
+  display:none;
+}
+.up-overall-prog.visible{display:block}
+.up-overall-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--gray-100)}
+::-webkit-scrollbar-thumb{background:var(--gray-400);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--navy)}
+
+.footer{text-align:center;padding:18px;font-size:12px;color:var(--gray-400);margin-top:18px}
+.footer a{color:var(--blue-light);text-decoration:none}
+@media(max-width:600px){.tgrid{grid-template-columns:repeat(3,1fr)}.frow{grid-template-columns:1fr}.hdr-title span{display:none}}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="ldr-ov" id="ldr"><div class="ldr-spin"></div><div class="ldr-txt" id="ldr-txt">กำลังดำเนินการ...</div></div>
+
+<!-- TOAST -->
+<div class="tcon" id="tcon"></div>
+
+<!-- BATCH MODAL -->
+<div class="modal-ov" id="batch-modal">
+  <div class="modal">
+    <div class="modal-hdr"><h3>📦 ผลลัพธ์ QR Batch</h3><button class="modal-close" onclick="closeBatchModal()">✕</button></div>
+    <div class="modal-body">
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <button class="btn btn-gold btn-sm" onclick="downloadAllBatch()">⬇ ดาวน์โหลดทั้งหมด</button>
+        <button class="btn btn-ol btn-sm" onclick="saveBatchToDrive()">☁ บันทึก Drive ทั้งหมด</button>
+      </div>
+      <div class="batch-grid" id="batch-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-logo">⚙️</div>
+    <div class="hdr-title">QR <span>ProMaker</span></div>
+    <span class="hdr-badge">v4</span>
+  </div>
+  <nav class="hdr-nav">
+    <button class="nav-btn active" onclick="showView('creator')" id="nav-creator">⊞ สร้าง QR</button>
+    <button class="nav-btn" onclick="showView('upload')" id="nav-upload">☁ อัปโหลดไฟล์</button>
+    <button class="nav-btn" onclick="showView('batch')" id="nav-batch">📦 Batch</button>
+    <button class="nav-btn" onclick="showView('history')" id="nav-history">≡ ประวัติ</button>
+    <button class="nav-btn" onclick="showView('settings')" id="nav-settings">⚙ ตั้งค่า</button>
+  </nav>
+</header>
+
+<main class="app">
+
+<!-- ══ VIEW: CREATOR ══════════════════════════════════════ -->
+<div class="view active" id="view-creator">
+  <div class="ph">
+    <div class="ph-icon">⊞</div>
+    <div><h1>สร้าง QR Code</h1><p>ข้อมูลฝังถาวรใน QR — ไม่มีวันหมดอายุ ไม่ต้องพึ่งเซิร์ฟเวอร์</p></div>
+  </div>
+
+  <div class="cgrid">
+    <!-- LEFT -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+
+      <!-- Step 1: Data -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-step">1</div><h2>เลือกประเภทข้อมูล</h2></div>
+        <div class="card-body">
+          <div class="mtabs">
+            <button class="mtab active" onclick="setMode('manual')" id="mode-manual">✏️ กรอกข้อมูล</button>
+            <button class="mtab" onclick="setMode('file')" id="mode-file">📁 นำเข้าจากไฟล์</button>
+          </div>
+
+          <!-- MANUAL -->
+          <div id="panel-manual">
+            <div class="tgrid">
+              <button class="tbtn active" onclick="setType('url')" id="type-url"><span class="tbtn-icon">🔗</span>ลิงก์</button>
+              <button class="tbtn" onclick="setType('wifi')" id="type-wifi"><span class="tbtn-icon">📶</span>WiFi</button>
+              <button class="tbtn" onclick="setType('phone')" id="type-phone"><span class="tbtn-icon">📞</span>โทรศัพท์</button>
+              <button class="tbtn" onclick="setType('email')" id="type-email"><span class="tbtn-icon">✉️</span>อีเมล</button>
+              <button class="tbtn" onclick="setType('vcard')" id="type-vcard"><span class="tbtn-icon">👤</span>นามบัตร</button>
+              <button class="tbtn" onclick="setType('text')" id="type-text"><span class="tbtn-icon">📝</span>ข้อความ</button>
+            </div>
+
+            <div class="dform active" id="form-url">
+              <div class="field"><label>URL <span class="req">*</span></label><input type="url" id="url-input" placeholder="https://example.go.th" oninput="livePreview()"></div>
+            </div>
+            <div class="dform" id="form-wifi">
+              <div class="field"><label>ชื่อเครือข่าย (SSID) <span class="req">*</span></label><input type="text" id="wifi-ssid" placeholder="MyNetwork" oninput="livePreview()"></div>
+              <div class="frow">
+                <div class="field"><label>รหัสผ่าน</label><input type="text" id="wifi-pass" placeholder="Password" oninput="livePreview()"></div>
+                <div class="field"><label>ความปลอดภัย</label><select id="wifi-sec" onchange="livePreview()"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">ไม่มีรหัสผ่าน</option></select></div>
+              </div>
+            </div>
+            <div class="dform" id="form-phone">
+              <div class="field"><label>หมายเลขโทรศัพท์ <span class="req">*</span></label><input type="tel" id="phone-input" placeholder="0812345678" oninput="livePreview()"></div>
+            </div>
+            <div class="dform" id="form-email">
+              <div class="field"><label>อีเมล <span class="req">*</span></label><input type="email" id="email-to" placeholder="contact@example.go.th" oninput="livePreview()"></div>
+              <div class="field"><label>หัวข้อ</label><input type="text" id="email-subject" placeholder="หัวข้ออีเมล" oninput="livePreview()"></div>
+              <div class="field"><label>ข้อความ</label><textarea id="email-body" placeholder="เนื้อหา..." oninput="livePreview()"></textarea></div>
+            </div>
+            <div class="dform" id="form-vcard">
+              <div class="frow">
+                <div class="field"><label>ชื่อ-นามสกุล <span class="req">*</span></label><input type="text" id="vc-name" placeholder="นายสมชาย ใจดี" oninput="livePreview()"></div>
+                <div class="field"><label>หน่วยงาน</label><input type="text" id="vc-org" placeholder="กรม..." oninput="livePreview()"></div>
+              </div>
+              <div class="frow">
+                <div class="field"><label>โทรศัพท์</label><input type="tel" id="vc-phone" placeholder="0812345678" oninput="livePreview()"></div>
+                <div class="field"><label>อีเมล</label><input type="email" id="vc-email" placeholder="email@example.go.th" oninput="livePreview()"></div>
+              </div>
+              <div class="field"><label>เว็บไซต์</label><input type="url" id="vc-url" placeholder="https://example.go.th" oninput="livePreview()"></div>
+            </div>
+            <div class="dform" id="form-text">
+              <div class="field"><label>ข้อความ <span class="req">*</span></label><textarea id="text-input" placeholder="พิมพ์ข้อความที่ต้องการ..." oninput="livePreview()"></textarea></div>
+            </div>
+          </div>
+
+          <!-- FILE MODE -->
+          <div id="panel-file" style="display:none">
+            <div class="upzone" id="upzone"
+              ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="dDrop(event)">
+              <input type="file" id="file-input" accept="*/*" onchange="handleFile(event)">
+              <div class="up-icon">📂</div>
+              <div class="up-title">ลาก & วางไฟล์ หรือคลิกเลือก</div>
+              <div class="up-sub">รองรับทุกประเภทไฟล์ — ระบบอ่านเนื้อหาอัตโนมัติ</div>
+              <div class="up-chips">
+                <span class="chip chip-d">.docx</span><span class="chip chip-s">.xlsx .csv</span>
+                <span class="chip chip-p">.pdf</span><span class="chip chip-i">.jpg .png .webp</span>
+                <span class="chip chip-t">.txt .json .xml</span><span class="chip chip-o">.vcf .ics + ทุกไฟล์</span>
+              </div>
+            </div>
+            <div class="fprev" id="fprev">
+              <div class="fprev-hdr">
+                <div class="fprev-name" id="fp-name">—</div>
+                <div class="fprev-meta" id="fp-meta">—</div>
+              </div>
+              <div class="fprev-body" id="fp-body"></div>
+              <div class="extract-bar" id="extract-bar">
+                <span class="ext-lbl">สร้าง QR จาก:</span>
+                <button class="btn btn-ol btn-sm" onclick="useFile('full')">📄 เนื้อหา</button>
+                <button class="btn btn-ol btn-sm" onclick="useFile('url')">🔗 URL ที่พบ</button>
+                <button class="btn btn-ol btn-sm" onclick="useFile('name')">📌 ชื่อไฟล์</button>
+                <button class="btn btn-sm" style="background:var(--navy);color:var(--white)" onclick="toFileBatch()">📦 Batch</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Logo -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-step">2</div><h2>โลโก้หน่วยงาน (ตรงกลาง QR)</h2></div>
+        <div class="card-body">
+          <div class="logo-section">
+            <div class="logo-hdr">
+              <div class="logo-hdr-title">🏛️ อัปโหลดโลโก้</div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+                  <input type="checkbox" id="logo-enable" onchange="toggleLogo()" style="accent-color:var(--navy);width:15px;height:15px"> เปิดใช้งาน
+                </label>
+              </div>
+            </div>
+            <div class="logo-body" id="logo-body" style="opacity:.4;pointer-events:none">
+              <div class="logo-preview-wrap">
+                <div class="logo-thumb" id="logo-thumb">🏛️</div>
+                <div class="logo-drop-zone"
+                  ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="logoDropped(event)">
+                  <input type="file" id="logo-input" accept="image/*" onchange="handleLogoFile(event)">
+                  <div class="logo-drop-label">คลิกหรือลากรูปโลโก้มาวาง<br><small style="color:var(--gray-400)">PNG, JPG, SVG, WebP (แนะนำพื้นโปร่งใส)</small></div>
+                </div>
+              </div>
+              <div class="logo-controls">
+                <span class="logo-size-label">ขนาดโลโก้:</span>
+                <input type="range" id="logo-size" class="logo-size-input" min="20" max="120" value="60" oninput="updateLogoSize(this.value)" style="flex:1;accent-color:var(--navy)">
+                <span id="logo-size-val" style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--navy);min-width:45px">60 px</span>
+                <button class="btn btn-sm btn-ol" onclick="clearLogo()" id="btn-clear-logo" style="display:none">🗑 ลบ</button>
+              </div>
+              <div class="logo-note">
+                ⚡ ควรใช้ Error Correction ระดับ Q หรือ H เพื่อให้ QR อ่านได้แม้มีโลโก้ทับ<br>
+                💡 โลโก้จะถูกวางตรงกลาง QR แบบ canvas — บันทึกในระบบพร้อมกับการตั้งค่า
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Style -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-step">3</div><h2>สีและขนาด</h2></div>
+        <div class="card-body">
+          <div class="presets">
+            <button class="pset active" onclick="applyPreset('#0d2137','#ffffff',this)" style="background:linear-gradient(135deg,#0d2137,#2563a8)" title="Navy ราชการ"></button>
+            <button class="pset" onclick="applyPreset('#1a7a4a','#ffffff',this)" style="background:linear-gradient(135deg,#1a7a4a,#2ea65c)" title="เขียว"></button>
+            <button class="pset" onclick="applyPreset('#7b2d8b','#ffffff',this)" style="background:linear-gradient(135deg,#7b2d8b,#a855f7)" title="ม่วง"></button>
+            <button class="pset" onclick="applyPreset('#c0392b','#ffffff',this)" style="background:linear-gradient(135deg,#c0392b,#e74c3c)" title="แดง"></button>
+            <button class="pset" onclick="applyPreset('#c9a227','#0d2137',this)" style="background:linear-gradient(135deg,#c9a227,#0d2137)" title="ทองบน Navy"></button>
+            <button class="pset" onclick="applyPreset('#1e3a2f','#f5e9c0',this)" style="background:linear-gradient(135deg,#1e3a2f,#c9a227)" title="ทองบนเขียว"></button>
+            <button class="pset" onclick="applyPreset('#000000','#ffffff',this)" style="background:linear-gradient(135deg,#000,#555)" title="ขาวดำ"></button>
+            <button class="pset" onclick="applyPreset('#ffffff','#0d2137',this)" style="background:linear-gradient(135deg,#0d2137,#eee);border:1px solid #ccc" title="ขาวบน Navy"></button>
+          </div>
+          <div class="frow">
+            <div class="field"><label>สี QR</label><input type="color" id="c-fore" value="#0d2137" onchange="livePreview()"></div>
+            <div class="field"><label>สีพื้นหลัง</label><input type="color" id="c-back" value="#ffffff" onchange="livePreview()"></div>
+          </div>
+          <div class="frow">
+            <div class="field">
+              <label>ขนาด (px)</label>
+              <select id="qr-size" onchange="livePreview()">
+                <option value="200">200×200</option>
+                <option value="300" selected>300×300</option>
+                <option value="400">400×400</option>
+                <option value="600">600×600</option>
+                <option value="1000">1000×1000 (พิมพ์)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Error Correction</label>
+              <select id="qr-ecl" onchange="livePreview()">
+                <option value="L">L — 7%</option>
+                <option value="M" selected>M — 15%</option>
+                <option value="Q">Q — 25% (แนะนำมีโลโก้)</option>
+                <option value="H">H — 30%</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: PREVIEW -->
+    <div class="card pcard">
+      <div class="card-hdr"><div class="card-step">4</div><h2>ตัวอย่าง & ดาวน์โหลด</h2></div>
+      <div class="pqr-wrap" id="pqr-wrap">
+        <div class="prev-empty" id="prev-empty"><div class="prev-empty-icon">⬛</div><div class="prev-empty-text">กรอกข้อมูลเพื่อดูตัวอย่าง</div></div>
+        <!-- canvas สำหรับ preview เท่านั้น (ขนาดเล็ก) -->
+        <canvas id="qr-prev-canvas" style="display:none;max-width:240px;border-radius:4px;box-shadow:var(--shadow-lg)"></canvas>
+      </div>
+      <div class="prev-meta" id="prev-meta" style="display:none">
+        <span class="refcode" id="prev-ref">—</span>
+        <span class="prev-type" id="prev-type-lbl">—</span>
+      </div>
+      <div class="astack">
+        <button class="btn btn-primary btn-full" onclick="generateAndSave()">⚙ สร้างและบันทึกลง Sheets</button>
+        <button class="btn btn-gold btn-full" onclick="downloadQR('png')" id="btn-dl-png" disabled>⬇ ดาวน์โหลด PNG (ความละเอียดสูง)</button>
+        <button class="btn btn-ol btn-full" onclick="downloadQR('svg')" id="btn-dl-svg" disabled>⬇ ดาวน์โหลด SVG (เวกเตอร์)</button>
+        <button class="btn btn-ol btn-full" onclick="copyQR()" id="btn-copy" disabled>📋 คัดลอกรูปภาพ</button>
+        <button class="btn btn-ol btn-full" onclick="saveToDrive()" id="btn-drive" disabled>☁ บันทึกขึ้น Google Drive</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIEW: UPLOAD FILE → DRIVE → QR ═══════════════════ -->
+<div class="view" id="view-upload">
+  <div class="ph">
+    <div class="ph-icon">☁</div>
+    <div>
+      <h1>อัปโหลดไฟล์ → Drive → QR Code</h1>
+      <p>อัปโหลดไฟล์ขึ้น Google Drive → ได้ลิงก์ → สร้าง QR ให้คนสแกนแล้วเปิด/โหลดไฟล์ได้ทันที</p>
+    </div>
+  </div>
+
+  <!-- How it works banner -->
+  <div style="background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);border-radius:var(--rl);padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;box-shadow:var(--shadow-md)">
+    <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:260px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.9)">
+        <span style="background:var(--gold);color:var(--navy);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0">1</span>
+        <span>เลือกไฟล์</span>
+      </div>
+      <div style="color:var(--gold);font-size:18px">→</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.9)">
+        <span style="background:var(--gold);color:var(--navy);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0">2</span>
+        <span>อัปโหลดขึ้น Drive</span>
+      </div>
+      <div style="color:var(--gold);font-size:18px">→</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.9)">
+        <span style="background:var(--gold);color:var(--navy);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0">3</span>
+        <span>ได้ QR Code</span>
+      </div>
+      <div style="color:var(--gold);font-size:18px">→</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.9)">
+        <span style="background:var(--gold);color:var(--navy);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0">4</span>
+        <span>สแกน → เปิดไฟล์</span>
+      </div>
+    </div>
+    <div style="font-size:12px;color:rgba(255,255,255,.6);font-style:italic">รองรับทุกประเภทไฟล์ · ลิงก์ไม่มีวันหมดอายุ</div>
+  </div>
+
+  <div class="cgrid">
+    <!-- LEFT -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+
+      <!-- SINGLE FILE UPLOAD -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-step">1</div><h2>เลือกไฟล์ที่ต้องการแชร์</h2></div>
+        <div class="card-body">
+
+          <!-- Drop zone -->
+          <div class="upzone" id="uf-dropzone"
+            ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="ufDrop(event)"
+            style="border-color:var(--blue-light)">
+            <input type="file" id="uf-input" accept="*/*" multiple onchange="ufSelect(event)">
+            <div class="up-icon">☁</div>
+            <div class="up-title">ลากไฟล์มาวางที่นี่ หรือคลิกเลือก</div>
+            <div class="up-sub">รองรับทุกประเภทไฟล์ · เลือกได้หลายไฟล์พร้อมกัน<br>ไฟล์จะถูกอัปโหลดขึ้น Google Drive และสร้าง QR ให้อัตโนมัติ</div>
+            <div class="up-chips">
+              <span class="chip chip-p">PDF</span>
+              <span class="chip chip-d">Word / PPT / Excel</span>
+              <span class="chip chip-i">รูปภาพ / วิดีโอ</span>
+              <span class="chip chip-t">ZIP / RAR</span>
+              <span class="chip chip-o">ทุกไฟล์</span>
+            </div>
+          </div>
+
+          <!-- File queue -->
+          <div id="uf-queue" style="display:none;margin-top:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <span style="font-size:13px;font-weight:700;color:var(--navy)" id="uf-queue-count">0 ไฟล์</span>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-ol btn-sm" onclick="ufClearQueue()">🗑 ล้างทั้งหมด</button>
+              </div>
+            </div>
+            <div id="uf-file-list" style="display:flex;flex-direction:column;gap:8px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STYLE -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-step">2</div><h2>สไตล์ QR</h2></div>
+        <div class="card-body">
+          <div class="presets" id="uf-presets">
+            <button class="pset active" onclick="ufPreset('#0d2137','#ffffff',this)" style="background:linear-gradient(135deg,#0d2137,#2563a8)"></button>
+            <button class="pset" onclick="ufPreset('#1a7a4a','#ffffff',this)" style="background:linear-gradient(135deg,#1a7a4a,#2ea65c)"></button>
+            <button class="pset" onclick="ufPreset('#c9a227','#0d2137',this)" style="background:linear-gradient(135deg,#c9a227,#0d2137)"></button>
+            <button class="pset" onclick="ufPreset('#c0392b','#ffffff',this)" style="background:linear-gradient(135deg,#c0392b,#e74c3c)"></button>
+            <button class="pset" onclick="ufPreset('#000000','#ffffff',this)" style="background:linear-gradient(135deg,#000,#555)"></button>
+          </div>
+          <div class="frow">
+            <div class="field"><label>สี QR</label><input type="color" id="uf-fore" value="#0d2137" onchange="ufPreviewUpdate()"></div>
+            <div class="field"><label>สีพื้นหลัง</label><input type="color" id="uf-back" value="#ffffff" onchange="ufPreviewUpdate()"></div>
+          </div>
+          <div class="frow">
+            <div class="field">
+              <label>ขนาด (px)</label>
+              <select id="uf-size">
+                <option value="300" selected>300×300</option>
+                <option value="400">400×400</option>
+                <option value="600">600×600</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Error Correction</label>
+              <select id="uf-ecl">
+                <option value="M" selected>M — 15%</option>
+                <option value="Q">Q — 25%</option>
+                <option value="H">H — 30%</option>
+              </select>
+            </div>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:4px">
+            <input type="checkbox" id="uf-use-logo" style="accent-color:var(--navy);width:15px;height:15px" onchange="ufPreviewUpdate()"> ใช้โลโก้หน่วยงานตรงกลาง QR
+          </label>
+          <!-- QR link type selector -->
+          <div style="margin-top:14px;padding:12px;background:var(--gray-50);border-radius:var(--r);border:1px solid var(--gray-200)">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px">🔗 ประเภทลิงก์ใน QR</div>
+            <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer;margin-bottom:8px">
+              <input type="radio" name="uf-link-type" value="view" id="uf-lt-view" checked style="margin-top:3px;accent-color:var(--navy)">
+              <div><strong>ดูออนไลน์</strong> — เปิดไฟล์ใน Google Drive Viewer<br><span style="font-size:11px;color:var(--gray-600)">เหมาะกับ PDF, รูปภาพ, Google Docs — เปิดได้ทันทีไม่ต้องดาวน์โหลด</span></div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer">
+              <input type="radio" name="uf-link-type" value="download" id="uf-lt-download" style="margin-top:3px;accent-color:var(--navy)">
+              <div><strong>ดาวน์โหลดทันที</strong> — กด QR แล้วโหลดไฟล์ลงเครื่องเลย<br><span style="font-size:11px;color:var(--gray-600)">เหมาะกับ ZIP, ไฟล์ติดตั้ง, เอกสารที่ต้องการโหลดไป</span></div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: RESULT PANEL -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+
+      <!-- Upload progress + result -->
+      <div class="card" style="position:sticky;top:90px">
+        <div class="card-hdr"><div class="card-step">3</div><h2>อัปโหลดและสร้าง QR</h2></div>
+        <div class="card-body" id="uf-result-body">
+          <div style="text-align:center;padding:28px 16px;color:var(--gray-400)">
+            <div style="font-size:44px;margin-bottom:10px;opacity:.3">☁</div>
+            <div style="font-size:13px">เลือกไฟล์เพื่อเริ่มต้น</div>
+          </div>
+        </div>
+        <div class="astack">
+          <button class="btn btn-primary btn-full" onclick="ufUploadAll()" id="uf-btn-upload" disabled>
+            ☁ อัปโหลด Drive และสร้าง QR
+          </button>
+          <button class="btn btn-gold btn-full" onclick="ufDownloadAllQR()" id="uf-btn-dl-all" disabled>
+            ⬇ ดาวน์โหลด QR ทั้งหมด
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result cards grid (shown after upload) -->
+  <div id="uf-results-grid" style="display:none;margin-top:28px">
+    <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:10px">
+      ✅ ผลลัพธ์การอัปโหลด
+      <span id="uf-result-count" style="font-size:13px;font-weight:400;color:var(--gray-600)"></span>
+    </div>
+    <div id="uf-result-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px"></div>
+  </div>
+</div>
+
+<!-- ══ VIEW: UPLOAD FILE → DRIVE → QR ════════════════════ -->
+<div class="view" id="view-upload">
+  <div class="ph">
+    <div class="ph-icon">☁</div>
+    <div>
+      <h1>อัปโหลดไฟล์ → Google Drive → QR Code</h1>
+      <p>อัปโหลดไฟล์ขึ้น Drive แล้วระบบสร้าง QR จากลิงก์ไฟล์ — สแกนแล้วเปิด/ดาวน์โหลดได้ทันที</p>
+    </div>
+  </div>
+
+  <div class="cgrid">
+    <!-- LEFT: Upload zone + queue -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+
+      <!-- Drop zone -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-step">1</div><h2>เลือกไฟล์ที่ต้องการอัปโหลด</h2></div>
+        <div class="card-body">
+
+          <div id="udrop" class="udrop-zone"
+            ondragover="uDragOver(event)" ondragleave="uDragLeave(event)" ondrop="uDrop(event)">
+            <input type="file" id="u-file-input" multiple accept="*/*" onchange="uFilePicked(event)">
+            <div class="udrop-icon" id="udrop-icon">☁</div>
+            <div class="udrop-title">ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือก</div>
+            <div class="udrop-sub">
+              รองรับ<strong>ทุกประเภทไฟล์</strong> — PDF, Word, Excel, รูปภาพ, วิดีโอ, ZIP ฯลฯ<br>
+              ระบบจะอัปโหลดขึ้น Google Drive แล้วสร้าง QR จากลิงก์ไฟล์
+            </div>
+            <div class="udrop-limit">อัปโหลดได้หลายไฟล์พร้อมกัน · ขนาดต่อไฟล์ไม่เกิน 25 MB (ขีดจำกัด GAS)</div>
+          </div>
+
+          <!-- File queue -->
+          <div id="u-queue" class="fqueue" style="display:none"></div>
+
+          <!-- Overall progress -->
+          <div class="up-overall-prog" id="u-overall-prog">
+            <div class="up-overall-title">
+              <span id="u-prog-icon">⏳</span>
+              <span id="u-prog-title">กำลังอัปโหลด...</span>
+            </div>
+            <div class="prog-wrap">
+              <div class="prog-lbl"><span id="u-prog-lbl">0 / 0 ไฟล์</span><span id="u-prog-pct">0%</span></div>
+              <div class="prog-bg"><div class="prog-fill" id="u-prog-bar"></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Style -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-step">2</div><h2>สไตล์ QR ที่จะสร้าง</h2></div>
+        <div class="card-body">
+          <div class="presets" id="u-presets">
+            <button class="pset active" onclick="uPreset('#0d2137','#ffffff',this)" style="background:linear-gradient(135deg,#0d2137,#2563a8)"></button>
+            <button class="pset" onclick="uPreset('#1a7a4a','#ffffff',this)" style="background:linear-gradient(135deg,#1a7a4a,#2ea65c)"></button>
+            <button class="pset" onclick="uPreset('#7b2d8b','#ffffff',this)" style="background:linear-gradient(135deg,#7b2d8b,#a855f7)"></button>
+            <button class="pset" onclick="uPreset('#c9a227','#0d2137',this)" style="background:linear-gradient(135deg,#c9a227,#0d2137)"></button>
+            <button class="pset" onclick="uPreset('#000000','#ffffff',this)" style="background:linear-gradient(135deg,#000,#555)"></button>
+          </div>
+          <div class="frow">
+            <div class="field"><label>สี QR</label><input type="color" id="u-fore" value="#0d2137"></div>
+            <div class="field"><label>สีพื้นหลัง</label><input type="color" id="u-back" value="#ffffff"></div>
+          </div>
+          <div class="frow">
+            <div class="field"><label>ขนาด</label>
+              <select id="u-size"><option value="200">200×200</option><option value="300" selected>300×300</option><option value="400">400×400</option></select>
+            </div>
+            <div class="field"><label>QR เปิดดู / โหลด</label>
+              <select id="u-link-type">
+                <option value="view">เปิดดูออนไลน์ (view)</option>
+                <option value="download">ดาวน์โหลดตรง (download)</option>
+              </select>
+            </div>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:8px">
+            <input type="checkbox" id="u-use-logo" style="accent-color:var(--navy);width:15px;height:15px">
+            ใช้โลโก้หน่วยงานบน QR
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: action + results -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+
+      <!-- Actions -->
+      <div class="card" style="position:sticky;top:90px">
+        <div class="card-hdr"><div class="card-step">3</div><h2>อัปโหลดและสร้าง QR</h2></div>
+        <div class="card-body" style="text-align:center;padding:28px 22px">
+          <div id="u-action-idle">
+            <div style="font-size:48px;margin-bottom:12px;opacity:.3">☁</div>
+            <div style="font-size:13px;color:var(--gray-600)">เลือกไฟล์ก่อน<br>แล้วกดปุ่มด้านล่าง</div>
+          </div>
+          <div id="u-action-ready" style="display:none">
+            <div style="font-size:42px;margin-bottom:8px">📂</div>
+            <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px" id="u-ready-count">0 ไฟล์พร้อมอัปโหลด</div>
+            <div style="font-size:12px;color:var(--gray-600)" id="u-ready-size">0 B</div>
+          </div>
+        </div>
+        <div class="astack">
+          <button class="btn btn-primary btn-full" onclick="startUpload()" id="btn-start-upload" disabled>
+            ☁ อัปโหลดและสร้าง QR
+          </button>
+          <button class="btn btn-gold btn-full" onclick="dlAllUploadQR()" id="btn-dl-upload-all" disabled>
+            ⬇ ดาวน์โหลด QR ทั้งหมด
+          </button>
+          <button class="btn btn-ol btn-full" onclick="clearUploadQueue()" id="btn-clear-upload">
+            🗑 ล้างรายการ
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- QR Results section -->
+  <div id="u-results-section" style="display:none;margin-top:28px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-size:18px;font-weight:700;color:var(--navy)">🎉 QR Code ที่สร้างแล้ว</h2>
+      <span style="font-size:13px;color:var(--gray-600)" id="u-results-count"></span>
+    </div>
+    <div class="qr-result-grid" id="u-results-grid"></div>
+  </div>
+</div>
+
+<!-- ══ VIEW: BATCH ════════════════════════════════════════ -->
+<div class="view" id="view-batch">
+  <div class="ph"><div class="ph-icon">📦</div><div><h1>สร้าง QR Batch</h1><p>อัปโหลดไฟล์หลายแถว — สร้าง QR ทีเดียวทุกรายการ บันทึก Sheets อัตโนมัติ</p></div></div>
+  <div class="cgrid">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="card">
+        <div class="card-hdr"><div class="card-step">1</div><h2>อัปโหลดไฟล์ข้อมูล</h2></div>
+        <div class="card-body">
+          <div class="upzone" id="batch-upzone"
+            ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="batchDrop(event)">
+            <input type="file" id="batch-file-input" accept=".csv,.xlsx,.xls,.txt,.json" onchange="handleBatchFile(event)">
+            <div class="up-icon">📊</div>
+            <div class="up-title">อัปโหลดไฟล์รายการ</div>
+            <div class="up-sub">แต่ละแถว = QR Code 1 อัน</div>
+            <div class="up-chips"><span class="chip chip-s">.csv</span><span class="chip chip-s">.xlsx</span><span class="chip chip-t">.txt</span><span class="chip chip-o">.json</span></div>
+          </div>
+          <div id="batch-col-wrap" style="display:none;margin-top:14px">
+            <div class="field"><label>เลือกคอลัมน์ข้อมูล QR</label><select id="batch-col" onchange="refreshBatchList()"></select></div>
+          </div>
+          <div id="batch-list-wrap" style="display:none;margin-top:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--navy)" id="batch-count-lbl">0 รายการ</span>
+              <div style="display:flex;gap:7px">
+                <button class="btn btn-ol btn-sm" onclick="selAll(true)">เลือกทั้งหมด</button>
+                <button class="btn btn-ol btn-sm" onclick="selAll(false)">ยกเลิก</button>
+              </div>
+            </div>
+            <div class="batch-list" id="batch-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-step">2</div><h2>สไตล์ Batch</h2></div>
+        <div class="card-body">
+          <div class="frow">
+            <div class="field"><label>สี QR</label><input type="color" id="bc-fore" value="#0d2137"></div>
+            <div class="field"><label>สีพื้นหลัง</label><input type="color" id="bc-back" value="#ffffff"></div>
+          </div>
+          <div class="frow">
+            <div class="field"><label>ขนาด</label><select id="bc-size"><option value="200">200×200</option><option value="300" selected>300×300</option><option value="400">400×400</option></select></div>
+            <div class="field"><label>Error Correction</label><select id="bc-ecl"><option value="M" selected>M — 15%</option><option value="Q">Q — 25%</option><option value="H">H — 30%</option></select></div>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:8px">
+            <input type="checkbox" id="bc-logo" style="accent-color:var(--navy);width:15px;height:15px"> ใช้โลโก้หน่วยงาน (ต้องตั้งค่าโลโก้ก่อน)
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="position:sticky;top:90px">
+      <div class="card-hdr"><div class="card-step">3</div><h2>สร้างและดาวน์โหลด</h2></div>
+      <div class="card-body">
+        <div id="batch-prog-wrap" style="display:none">
+          <div class="prog-wrap"><div class="prog-lbl"><span id="b-prog-lbl">กำลังสร้าง...</span><span id="b-prog-pct">0%</span></div><div class="prog-bg"><div class="prog-fill" id="b-prog-bar"></div></div></div>
+        </div>
+        <div id="batch-empty-msg" style="text-align:center;padding:28px;color:var(--gray-400);font-size:13px">อัปโหลดไฟล์เพื่อเริ่มต้น</div>
+      </div>
+      <div class="astack">
+        <button class="btn btn-primary btn-full" onclick="runBatch()" id="btn-run-batch" disabled>⚙ สร้าง QR + บันทึก Sheets</button>
+        <button class="btn btn-gold btn-full" onclick="downloadAllBatch()" id="btn-dl-all" disabled>⬇ ดาวน์โหลดทั้งหมด</button>
+        <button class="btn btn-ol btn-full" onclick="previewBatchModal()" id="btn-prev-batch" disabled>👁 ดูตัวอย่าง Grid</button>
+        <button class="btn btn-ol btn-full" onclick="saveBatchToDrive()" id="btn-batch-drive" disabled>☁ บันทึก Drive ทั้งหมด</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIEW: HISTORY ══════════════════════════════════════ -->
+<div class="view" id="view-history">
+  <div class="ph"><div class="ph-icon">≡</div><div><h1>ประวัติการสร้าง QR Code</h1><p>เก็บใน Google Sheets — ไม่หาย ค้นหาได้ตลอดเวลา</p></div></div>
+  <div class="sbar">
+    <div class="scard"><div class="sicon si-navy">⊞</div><div><div class="sval" id="st-total">—</div><div class="slbl">QR ทั้งหมด</div></div></div>
+    <div class="scard"><div class="sicon si-gold">📁</div><div><div class="sval" id="st-file">—</div><div class="slbl">จากไฟล์</div></div></div>
+    <div class="scard"><div class="sicon si-green">☁</div><div><div class="sval" id="st-drive">—</div><div class="slbl">บันทึก Drive</div></div></div>
+    <div class="scard"><div class="sicon si-orange">📦</div><div><div class="sval" id="st-batch">—</div><div class="slbl">Batch</div></div></div>
+  </div>
+  <div class="htoolbar">
+    <div class="searchbox"><span>🔍</span><input type="text" placeholder="ค้นหารหัส, ประเภท, ข้อมูล..." oninput="searchHistory(this.value)" id="hist-search"></div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap">
+      <button class="btn btn-ol btn-sm" onclick="loadHistory()">⟳ รีเฟรช</button>
+      <button class="btn btn-red btn-sm" onclick="confirmClear()">🗑 ล้างประวัติทั้งหมด</button>
+    </div>
+  </div>
+  <div class="twrap">
+    <table>
+      <thead><tr>
+        <th>รหัสอ้างอิง</th><th>ประเภท</th><th>แหล่งที่มา</th>
+        <th>ข้อมูล QR</th><th>สี</th><th>โลโก้</th><th>วันที่สร้าง</th><th>Drive</th><th>ลบ</th>
+      </tr></thead>
+      <tbody id="hist-tbody"></tbody>
+    </table>
+  </div>
+  <div id="hist-pager" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;font-size:13px"></div>
+</div>
+
+<!-- ══ VIEW: SETTINGS ═════════════════════════════════════ -->
+<div class="view" id="view-settings">
+  <div class="ph"><div class="ph-icon">⚙</div><div><h1>ตั้งค่าแอปพลิเคชัน</h1><p>จัดการ Google Sheets, Drive, โลโก้ และธีม</p></div></div>
+  <div class="sgrid">
+    <div class="card">
+      <div class="card-hdr"><div class="card-step">📊</div><h2>Google Sheets (ฐานข้อมูล)</h2></div>
+      <div class="card-body">
+        <div id="sheets-status" class="si-box si-info"><div class="si-dot"></div>กำลังตรวจสอบ...</div>
+        <div style="margin-top:12px;font-size:12px;color:var(--gray-600)">ประวัติทั้งหมดเก็บใน Sheet "QR_History" — ไม่ใช้ localStorage</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-step">☁</div><h2>Google Drive</h2></div>
+      <div class="card-body">
+        <div class="field"><label>Folder ID</label><input type="text" id="drive-folder-id" placeholder="1BxiMVs0XRA..."></div>
+        <div style="font-size:11px;color:var(--gray-400);margin-bottom:12px">แชร์โฟลเดอร์เป็น <em>Anyone with link → Viewer</em></div>
+        <button class="btn btn-ol btn-sm" onclick="testDrive()">🔗 ทดสอบ</button>
+        <div id="drive-status" class="si-box si-info" style="margin-top:12px"><div class="si-dot"></div>ยังไม่ทดสอบ</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-step">🏛️</div><h2>โลโก้หน่วยงาน (ส่วนกลาง)</h2></div>
+      <div class="card-body">
+        <div class="logo-preview-wrap" style="margin-bottom:14px">
+          <div class="logo-thumb" id="settings-logo-thumb">🏛️</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:6px" id="settings-logo-name">ยังไม่มีโลโก้</div>
+            <div style="font-size:12px;color:var(--gray-600)">โลโก้นี้จะใช้กับ QR ทุกอัน<br>เมื่อเปิดใช้งานโลโก้</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="saveLogoToSheets()">💾 บันทึกโลโก้ลง Sheets</button>
+          <button class="btn btn-red btn-sm" onclick="removeLogoFromSheets()">🗑 ลบโลโก้</button>
+        </div>
+        <div id="logo-save-status" style="margin-top:12px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-step">🎨</div><h2>ธีมองค์กร</h2></div>
+      <div class="card-body">
+        <div class="field"><label>ชื่อองค์กร</label><input type="text" id="org-name" placeholder="กรม/หน่วยงานของท่าน"></div>
+        <div class="frow">
+          <div class="field"><label>สีหลัก</label><input type="color" id="theme-primary" value="#0d2137"></div>
+          <div class="field"><label>สีรอง</label><input type="color" id="theme-accent" value="#c9a227"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-step">💾</div><h2>บันทึกการตั้งค่า</h2></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-primary btn-full" onclick="saveSettings()">💾 บันทึกการตั้งค่าทั้งหมด</button>
+        <button class="btn btn-ol btn-full" onclick="testConnection()">🔌 ทดสอบการเชื่อมต่อ</button>
+        <div style="font-size:11px;color:var(--gray-400);text-align:center;margin-top:4px">v4.0 · Sheets-first · No localStorage · No QR expiry</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+<div class="footer">QR ProMaker v4.0 · <a href="#">ดูเอกสาร</a> · ข้อมูลฝังตรงใน QR — ไม่มีวันหมดอายุ</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// QR ProMaker v4 — Full Frontend
+// Sheets-only history · No localStorage · Logo overlay · No expiry QR
+// ═══════════════════════════════════════════════════════════
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+// ─── GAS BRIDGE ─────────────────────────────────────────
+const isGAS = typeof google !== 'undefined' && google.script;
+function gasCall(fn, params) {
+  if (isGAS) {
+    return new Promise((res, rej) =>
+      google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](params)
+    );
+  }
+  // Demo mode — return simulated response
+  return Promise.resolve({ demo: true, records: [], total: 0 });
+}
+
+// ─── STATE ───────────────────────────────────────────────
+let currentType   = 'url';
+let currentMode   = 'manual';
+let currentRefId  = null;
+let lastQRData    = null;
+let currentFile   = null;   // parsed file info
+let batchItems    = [];
+let batchCanvases = [];
+let logoBase64    = '';     // current logo in-memory
+let logoEnabled   = false;
+let logoSize      = 60;
+
+// History pagination
+let histPage    = 0;
+const HIST_LIMIT = 50;
+let histSearch  = '';
+
+const TYPE_LABELS = {
+  url:'ลิงก์', wifi:'WiFi', phone:'เบอร์โทร', email:'อีเมล',
+  vcard:'นามบัตร', text:'ข้อความ', file:'จากไฟล์', batch:'Batch'
+};
+const TYPE_BADGES = {
+  url:'b-blue', wifi:'b-teal', phone:'b-amber', email:'b-pink',
+  vcard:'b-purple', text:'b-gray', file:'b-orange', batch:'b-orange'
+};
+
+// ─── VIEW ───────────────────────────────────────────────
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.getElementById('nav-' + v).classList.add('active');
+  if (v === 'history') loadHistory();
+  if (v === 'settings') loadSettings();
+}
+
+// ─── MODE / TYPE ─────────────────────────────────────────
+function setMode(m) {
+  currentMode = m;
+  document.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
+  document.getElementById('mode-' + m).classList.add('active');
+  document.getElementById('panel-manual').style.display = m === 'manual' ? 'block' : 'none';
+  document.getElementById('panel-file').style.display   = m === 'file'   ? 'block' : 'none';
+  if (m === 'manual') livePreview();
+}
+
+function setType(t) {
+  currentType = t;
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.dform').forEach(f => f.classList.remove('active'));
+  document.getElementById('type-' + t).classList.add('active');
+  document.getElementById('form-' + t).classList.add('active');
+  livePreview();
+}
+
+function g(id) { return document.getElementById(id)?.value || ''; }
+
+function getFormData() {
+  switch (currentType) {
+    case 'url':   return { url: g('url-input') };
+    case 'wifi':  return { ssid: g('wifi-ssid'), password: g('wifi-pass'), security: g('wifi-sec') };
+    case 'phone': return { phone: g('phone-input') };
+    case 'email': return { email: g('email-to'), subject: g('email-subject'), body: g('email-body') };
+    case 'vcard': return { name: g('vc-name'), org: g('vc-org'), phone: g('vc-phone'), email: g('vc-email'), url: g('vc-url') };
+    case 'text':  return { text: g('text-input') };
+  }
+}
+
+function buildQRStr(type, data) {
+  if (!data) return '';
+  switch (type) {
+    case 'url':   return data.url || '';
+    case 'wifi':  return `WIFI:T:${data.security};S:${data.ssid};P:${data.password};H:false;;`;
+    case 'phone': return `tel:${data.phone}`;
+    case 'email': {
+      let s = `mailto:${data.email}`;
+      if (data.subject) s += `?subject=${encodeURIComponent(data.subject)}`;
+      if (data.body)    s += `${data.subject?'&':'?'}body=${encodeURIComponent(data.body)}`;
+      return s;
+    }
+    case 'vcard': return `BEGIN:VCARD\nVERSION:3.0\nFN:${data.name}\nORG:${data.org}\nTEL:${data.phone}\nEMAIL:${data.email}\nURL:${data.url}\nEND:VCARD`;
+    case 'text':  return data.text || '';
+    default:      return typeof data === 'string' ? data : (data.text || JSON.stringify(data));
+  }
+}
+
+// ─── LIVE PREVIEW ────────────────────────────────────────
+async function livePreview(forceStr) {
+  let qrStr = forceStr;
+  if (!qrStr) {
+    if (currentMode === 'file' && currentFile) {
+      qrStr = currentFile.qrText || currentFile.text?.substring(0, 300) || currentFile.name;
+    } else {
+      qrStr = buildQRStr(currentType, getFormData());
+    }
+  }
+  if (!qrStr) {
+    document.getElementById('prev-empty').style.display = 'block';
+    document.getElementById('qr-prev-canvas').style.display = 'none';
+    document.getElementById('prev-meta').style.display = 'none';
+    return;
+  }
+  lastQRData = qrStr;
+
+  const fore = document.getElementById('c-fore').value;
+  const back = document.getElementById('c-back').value;
+  const ecl  = document.getElementById('qr-ecl').value;
+  const canvas = document.getElementById('qr-prev-canvas');
+
+  await new Promise(res => {
+    QRCode.toCanvas(canvas, qrStr, {
+      width: 240, color: { dark: fore, light: back }, errorCorrectionLevel: ecl, margin: 2
+    }, () => res());
+  });
+
+  // Overlay logo
+  if (logoEnabled && logoBase64) {
+    await drawLogoOnCanvas(canvas, logoBase64, logoSize);
+  }
+
+  document.getElementById('prev-empty').style.display = 'none';
+  canvas.style.display = 'block';
+}
+
+// ─── LOGO OVERLAY ────────────────────────────────────────
+// วาดโลโก้ตรงกลาง canvas โดยตรง (ไม่ใช้ URL shortener, ไม่หมดอายุ)
+function drawLogoOnCanvas(canvas, base64, size) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const ctx = canvas.getContext('2d');
+      const cx  = (canvas.width  - size) / 2;
+      const cy  = (canvas.height - size) / 2;
+      // White padding behind logo
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(cx - 4, cy - 4, size + 8, size + 8);
+      ctx.drawImage(img, cx, cy, size, size);
+      res();
+    };
+    img.onerror = () => res();
+    img.src = base64;
+  });
+}
+
+// Build high-res canvas with logo
+async function buildFinalCanvas(qrStr, size) {
+  const fore = document.getElementById('c-fore').value;
+  const back = document.getElementById('c-back').value;
+  const ecl  = document.getElementById('qr-ecl').value;
+  const canvas = document.createElement('canvas');
+
+  await new Promise(res => {
+    QRCode.toCanvas(canvas, qrStr, {
+      width: size, color: { dark: fore, light: back }, errorCorrectionLevel: ecl, margin: 2
+    }, () => res());
+  });
+
+  if (logoEnabled && logoBase64) {
+    // Scale logo proportionally to final size
+    const scaledLogoSize = Math.round(logoSize * (size / 240));
+    await drawLogoOnCanvas(canvas, logoBase64, scaledLogoSize);
+  }
+  return canvas;
+}
+
+// ─── LOGO UI ─────────────────────────────────────────────
+function toggleLogo() {
+  logoEnabled = document.getElementById('logo-enable').checked;
+  const body = document.getElementById('logo-body');
+  body.style.opacity       = logoEnabled ? '1' : '.4';
+  body.style.pointerEvents = logoEnabled ? 'auto' : 'none';
+  livePreview();
+}
+
+function handleLogoFile(e) {
+  const file = e.target.files[0];
+  if (file) loadLogoFile(file);
+}
+function logoDropped(e) {
+  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) loadLogoFile(file);
+}
+
+function loadLogoFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    logoBase64 = ev.target.result;
+    // Update preview thumb
+    const thumb = document.getElementById('logo-thumb');
+    thumb.innerHTML = `<img src="${logoBase64}" alt="logo">`;
+    document.getElementById('btn-clear-logo').style.display = '';
+    document.getElementById('logo-drop-zone')?.querySelector('.logo-drop-label') &&
+      (document.querySelector('.logo-drop-label').innerHTML = `<strong>${file.name}</strong><br><small style="color:var(--green)">✓ โหลดสำเร็จ</small>`);
+    // Update settings thumb too
+    document.getElementById('settings-logo-thumb').innerHTML = `<img src="${logoBase64}" alt="logo">`;
+    document.getElementById('settings-logo-name').textContent = file.name;
+    if (logoEnabled) livePreview();
+    toast('โหลดโลโก้สำเร็จ', 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateLogoSize(v) {
+  logoSize = parseInt(v);
+  document.getElementById('logo-size-val').textContent = v + ' px';
+  if (logoEnabled) livePreview();
+}
+
+function clearLogo() {
+  logoBase64 = '';
+  document.getElementById('logo-thumb').innerHTML = '🏛️';
+  document.getElementById('btn-clear-logo').style.display = 'none';
+  document.querySelector('.logo-drop-label').innerHTML = 'คลิกหรือลากรูปโลโก้มาวาง<br><small style="color:var(--gray-400)">PNG, JPG, SVG, WebP</small>';
+  document.getElementById('settings-logo-thumb').innerHTML = '🏛️';
+  document.getElementById('settings-logo-name').textContent = 'ยังไม่มีโลโก้';
+  document.getElementById('logo-input').value = '';
+  if (logoEnabled) livePreview();
+}
+
+async function saveLogoToSheets() {
+  if (!logoBase64) { toast('กรุณาเลือกโลโก้ก่อน', 'error'); return; }
+  showLoader('กำลังบันทึกโลโก้ลง Sheets...');
+  try {
+    const result = await gasCall('saveLogo', { base64: logoBase64, size: logoSize });
+    if (result.demo) { toast('โหมดตัวอย่าง — โลโก้พร้อมใช้ใน session นี้', 'info'); return; }
+    if (result.error) throw new Error(result.error);
+    document.getElementById('logo-save-status').innerHTML =
+      '<div class="si-box si-ok" style="margin-top:0"><div class="si-dot"></div>บันทึกโลโก้ลง Sheets สำเร็จ</div>';
+    toast('บันทึกโลโก้สำเร็จ', 'success');
+  } catch(e) {
+    toast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+  } finally { hideLoader(); }
+}
+
+async function removeLogoFromSheets() {
+  showLoader('กำลังลบโลโก้...');
+  try {
+    await gasCall('removeLogo', {});
+    clearLogo();
+    toast('ลบโลโก้สำเร็จ', 'success');
+  } catch(e) { toast('เกิดข้อผิดพลาด: ' + e.message, 'error'); }
+  finally { hideLoader(); }
+}
+
+// ─── GENERATE & SAVE TO SHEETS ───────────────────────────
+async function generateAndSave() {
+  let qrStr = lastQRData;
+  if (!qrStr) {
+    qrStr = currentMode === 'file' && currentFile
+      ? (currentFile.qrText || currentFile.name)
+      : buildQRStr(currentType, getFormData());
+  }
+  if (!qrStr) { toast('กรุณากรอกข้อมูลก่อน', 'error'); return; }
+
+  showLoader('กำลังสร้างและบันทึกลง Sheets...');
+  try {
+    const result = await gasCall('generateAndSave', {
+      type:      currentMode === 'file' ? 'file' : currentType,
+      data:      currentMode === 'file' ? { text: qrStr } : getFormData(),
+      foreColor: document.getElementById('c-fore').value,
+      backColor: document.getElementById('c-back').value,
+      hasLogo:   logoEnabled && !!logoBase64,
+      source:    currentMode,
+      note:      ''
+    });
+
+    let refId = '';
+    if (!result.demo) {
+      if (result.error) throw new Error(result.error);
+      refId = result.refId;
+    } else {
+      refId = genRefId();
+      toast('โหมดตัวอย่าง — บันทึกแล้ว (ไม่มี Sheets จริง)', 'info');
+    }
+
+    currentRefId = refId;
+    document.getElementById('prev-meta').style.display = 'flex';
+    document.getElementById('prev-ref').textContent = refId;
+    document.getElementById('prev-type-lbl').textContent = TYPE_LABELS[currentMode === 'file' ? 'file' : currentType] || currentType;
+
+    enableDownloadBtns();
+    if (!result.demo) toast(`✓ บันทึกลง Sheets สำเร็จ รหัส: ${refId}`, 'success');
+  } catch(e) {
+    currentRefId = genRefId();
+    enableDownloadBtns();
+    toast('สร้าง QR สำเร็จ (บันทึก Sheets ไม่สำเร็จ: ' + e.message + ')', 'info');
+  } finally { hideLoader(); }
+}
+
+function enableDownloadBtns() {
+  ['btn-dl-png','btn-dl-svg','btn-copy','btn-drive'].forEach(id =>
+    document.getElementById(id).disabled = false
+  );
+}
+
+function genRefId() {
+  const pre = { url:'URL', wifi:'WFI', phone:'TEL', email:'EML', vcard:'VCD', text:'TXT', file:'FIL', batch:'BCH' };
+  const p = pre[currentType] || 'QRC';
+  const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let s = '';
+  for (let i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)];
+  return p + s;
+}
+
+// ─── DOWNLOAD ────────────────────────────────────────────
+async function downloadQR(format) {
+  if (!lastQRData) { toast('กรุณาสร้าง QR ก่อน', 'error'); return; }
+  const size = parseInt(document.getElementById('qr-size').value);
+  const name = `QR_${currentRefId || 'code'}`;
+
+  showLoader('กำลังสร้างไฟล์...');
+  try {
+    if (format === 'png') {
+      const canvas = await buildFinalCanvas(lastQRData, size);
+      const a = document.createElement('a');
+      a.download = name + '.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+      toast('ดาวน์โหลด PNG สำเร็จ', 'success');
+    } else {
+      // SVG export (without logo overlay — SVG doesn't support canvas logo)
+      const fore = document.getElementById('c-fore').value;
+      const back = document.getElementById('c-back').value;
+      const ecl  = document.getElementById('qr-ecl').value;
+      QRCode.toString(lastQRData, { type:'svg', color:{dark:fore,light:back}, errorCorrectionLevel:ecl, margin:2 }, (err, svg) => {
+        if (!err) {
+          const b = new Blob([svg], { type:'image/svg+xml' });
+          const a = document.createElement('a');
+          a.download = name + '.svg';
+          a.href = URL.createObjectURL(b);
+          a.click();
+          toast('ดาวน์โหลด SVG สำเร็จ (ไม่มีโลโก้ในไฟล์ SVG)', 'success');
+        }
+      });
+    }
+  } finally { hideLoader(); }
+}
+
+async function copyQR() {
+  if (!lastQRData) return;
+  showLoader('กำลังคัดลอก...');
+  try {
+    const canvas = await buildFinalCanvas(lastQRData, 400);
+    canvas.toBlob(async blob => {
+      await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+      toast('คัดลอกรูปภาพสำเร็จ', 'success');
+    });
+  } catch(e) { toast('คัดลอกไม่ได้: ' + e.message, 'error'); }
+  finally { hideLoader(); }
+}
+
+async function saveToDrive() {
+  if (!lastQRData) { toast('กรุณาสร้าง QR ก่อน', 'error'); return; }
+  showLoader('กำลังอัปโหลด Drive...');
+  try {
+    const size   = parseInt(document.getElementById('qr-size').value);
+    const canvas = await buildFinalCanvas(lastQRData, size);
+    const result = await gasCall('saveQRToDrive', {
+      imageBase64: canvas.toDataURL('image/png'),
+      refId: currentRefId
+    });
+    if (result.demo) { toast('ฟีเจอร์นี้ใช้ได้เฉพาะใน GAS', 'info'); return; }
+    if (result.error) throw new Error(result.error);
+    toast(`☁ บันทึก Drive สำเร็จ: ${result.fileName}`, 'success');
+  } catch(e) { toast('เกิดข้อผิดพลาด: ' + e.message, 'error'); }
+  finally { hideLoader(); }
+}
+
+// ─── COLOR PRESETS ────────────────────────────────────────
+function applyPreset(fore, back, btn) {
+  document.getElementById('c-fore').value = fore;
+  document.getElementById('c-back').value = back;
+  document.querySelectorAll('.pset').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  livePreview();
+}
+
+// ─── DRAG & DROP ─────────────────────────────────────────
+function dOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function dLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function dDrop(e) {
+  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0]; if (f) processFile(f);
+}
+
+// ─── FILE IMPORT ─────────────────────────────────────────
+function handleFile(e) { const f = e.target.files[0]; if (f) processFile(f); }
+
+async function processFile(file) {
+  showLoader(`กำลังอ่าน ${file.name}...`);
+  const ext = file.name.split('.').pop().toLowerCase();
+  try {
+    let text = '', rows = [], headers = [], type = 'text', html = '';
+
+    if (['txt','md','html','htm','css','js','ts','py','java','c','cpp','sh','bat',
+         'log','ini','cfg','yaml','yml','toml','sql','r','rb','go','rs'].includes(ext)) {
+      text = await rdText(file); type = 'text';
+    } else if (ext === 'json') {
+      const raw = await rdText(file);
+      try { const p = JSON.parse(raw); text = JSON.stringify(p,null,2); rows = Array.isArray(p) ? p.map(r=>typeof r==='object'?JSON.stringify(r):String(r)) : [raw]; } catch { text = raw; }
+      type = 'json';
+    } else if (['xml','svg'].includes(ext)) {
+      text = await rdText(file); type = 'xml';
+    } else if (['csv','tsv'].includes(ext)) {
+      text = await rdText(file);
+      const p = Papa.parse(text, { header:true, skipEmptyLines:true });
+      rows = p.data; headers = p.meta.fields || []; type = 'csv';
+    } else if (['xlsx','xls','ods'].includes(ext)) {
+      const ab = await rdAB(file);
+      const wb = XLSX.read(ab);
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      rows = XLSX.utils.sheet_to_json(ws);
+      headers = rows.length ? Object.keys(rows[0]) : [];
+      text = XLSX.utils.sheet_to_csv(ws); type = 'xlsx';
+    } else if (ext === 'pdf') {
+      const ab = await rdAB(file);
+      const pdf = await pdfjsLib.getDocument({data:ab}).promise;
+      let t = '';
+      for (let i=1;i<=Math.min(pdf.numPages,5);i++) {
+        const pg = await pdf.getPage(i);
+        const tc = await pg.getTextContent();
+        t += tc.items.map(x=>x.str).join(' ') + '\n';
+      }
+      text = t.trim(); type = 'pdf';
+    } else if (ext === 'docx') {
+      const ab = await rdAB(file);
+      const r = await mammoth.extractRawText({arrayBuffer:ab});
+      text = r.value; type = 'docx';
+    } else if (['jpg','jpeg','png','gif','webp','bmp'].includes(ext)) {
+      text = file.name; type = 'image';
+    } else if (ext === 'vcf') {
+      text = await rdText(file); type = 'vcard';
+    } else if (ext === 'ics') {
+      text = await rdText(file); type = 'ics';
+    } else {
+      text = file.name; type = 'binary';
+    }
+
+    const urls = (text.match(/https?:\/\/[^\s"'<>]+/g)||[]);
+
+    currentFile = { name:file.name, size:file.size, ext, type, text, rows, headers,
+                    urls:[...new Set(urls)], qrText:text.substring(0,300) };
+
+    // Render preview
+    renderFilePreview(currentFile, file);
+    livePreview(currentFile.qrText);
+    toast(`อ่านไฟล์สำเร็จ: ${file.name}`, 'success');
+  } catch(e) {
+    document.getElementById('fp-body').innerHTML =
+      `<div style="color:var(--red);padding:14px">เกิดข้อผิดพลาด: ${e.message}</div>`;
+    document.getElementById('fprev').classList.add('visible');
+    toast('อ่านไฟล์ไม่ได้: ' + e.message, 'error');
+  } finally { hideLoader(); }
+}
+
+function renderFilePreview(f, file) {
+  const icons = {pdf:'📕',xlsx:'📗',csv:'📊',docx:'📘',txt:'📄',json:'📋',image:'🖼️',vcard:'👤',ics:'📅',binary:'📄',xml:'🗂️',text:'📄'};
+  document.getElementById('fp-name').innerHTML = `${icons[f.type]||'📄'} ${esc(f.name)}`;
+  document.getElementById('fp-meta').textContent = `${fmtBytes(f.size)} · .${f.ext.toUpperCase()}`;
+
+  let bodyHtml = '';
+  if (f.type === 'image') {
+    bodyHtml = `<div style="text-align:center;padding:16px;color:var(--gray-600)">🖼️ ${esc(f.name)}<br><small>ใช้ชื่อไฟล์เป็น QR</small></div>`;
+  } else if (f.rows?.length && ['csv','xlsx','json'].includes(f.type)) {
+    bodyHtml = tblHtml(f.rows.slice(0,5), f.headers);
+  } else {
+    bodyHtml = `<pre>${esc(f.text?.substring(0,1500))}${f.text?.length>1500?'…':''}</pre>`;
+  }
+  document.getElementById('fp-body').innerHTML = bodyHtml;
+  document.getElementById('fprev').classList.add('visible');
+  document.getElementById('extract-bar').classList.add('visible');
+}
+
+function useFile(mode) {
+  if (!currentFile) return;
+  let qrText = '';
+  if (mode === 'full') {
+    qrText = currentFile.text?.substring(0,300) || currentFile.name;
+    toast('ใช้เนื้อหาทั้งหมด (300 อักขระแรก)', 'info');
+  } else if (mode === 'url') {
+    if (!currentFile.urls?.length) { toast('ไม่พบ URL ในไฟล์', 'error'); return; }
+    qrText = currentFile.urls[0];
+    toast(`พบ ${currentFile.urls.length} URL — ใช้อันแรก`, 'info');
+  } else {
+    qrText = currentFile.name;
+    toast('ใช้ชื่อไฟล์', 'info');
+  }
+  currentFile.qrText = qrText;
+  livePreview(qrText);
+}
+
+function toFileBatch() {
+  if (!currentFile?.rows?.length) { toast('ไฟล์นี้ไม่มีข้อมูลหลายแถว ลองใช้ CSV/XLSX', 'error'); return; }
+  showView('batch');
+  loadBatchFromData(currentFile.rows, currentFile.headers);
+}
+
+// ─── BATCH ───────────────────────────────────────────────
+function batchDrop(e) {
+  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0]; if (f) loadBatchFileRaw(f);
+}
+function handleBatchFile(e) { const f = e.target.files[0]; if (f) loadBatchFileRaw(f); }
+
+async function loadBatchFileRaw(file) {
+  showLoader(`อ่านไฟล์ Batch: ${file.name}...`);
+  try {
+    const ext = file.name.split('.').pop().toLowerCase();
+    let rows = [], headers = [];
+    if (['csv','tsv'].includes(ext)) {
+      const t = await rdText(file);
+      const p = Papa.parse(t, {header:true,skipEmptyLines:true});
+      rows = p.data; headers = p.meta.fields||[];
+    } else if (['xlsx','xls'].includes(ext)) {
+      const ab = await rdAB(file);
+      const wb = XLSX.read(ab);
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      rows = XLSX.utils.sheet_to_json(ws);
+      headers = rows.length ? Object.keys(rows[0]) : [];
+    } else if (ext === 'txt') {
+      const t = await rdText(file);
+      rows = t.split('\n').filter(l=>l.trim()).map(l=>({value:l.trim()}));
+      headers = ['value'];
+    } else if (ext === 'json') {
+      const t = await rdText(file);
+      const p = JSON.parse(t);
+      rows = Array.isArray(p) ? p : [p];
+      if (typeof rows[0]==='string') rows = rows.map(r=>({value:r}));
+      headers = rows.length&&typeof rows[0]==='object' ? Object.keys(rows[0]) : ['value'];
+    }
+    loadBatchFromData(rows, headers);
+    toast(`โหลด ${rows.length} รายการสำเร็จ`, 'success');
+  } catch(e) { toast('อ่านไม่ได้: '+e.message,'error'); }
+  finally { hideLoader(); }
+}
+
+function loadBatchFromData(rows, headers) {
+  if (!rows?.length) { toast('ไม่พบข้อมูล','error'); return; }
+  window._batchRows = rows;
+  window._batchHeaders = headers;
+  const sel = document.getElementById('batch-col');
+  sel.innerHTML = (headers||[]).map(h=>`<option value="${esc(h)}">${esc(h)}</option>`).join('');
+  document.getElementById('batch-col-wrap').style.display = headers.length>1 ? 'block' : 'none';
+  refreshBatchList();
+  document.getElementById('batch-list-wrap').style.display = 'block';
+  document.getElementById('btn-run-batch').disabled = false;
+}
+
+function refreshBatchList() {
+  const rows = window._batchRows || [];
+  const col  = document.getElementById('batch-col')?.value || (window._batchHeaders||[])[0];
+  batchItems = rows.map((r,i) => {
+    const v = col ? String(r[col]||'') : (typeof r==='string'?r:JSON.stringify(r));
+    return { data:v, label:`#${i+1} ${v.substring(0,40)}`, selected:!!v.trim() };
+  }).filter(x=>x.data.trim());
+  renderBatchList();
+}
+
+function renderBatchList() {
+  const el = document.getElementById('batch-list');
+  document.getElementById('batch-count-lbl').textContent = batchItems.length + ' รายการ';
+  el.innerHTML = batchItems.map((item,i) => `
+    <div class="bi">
+      <input type="checkbox" class="bi-chk" ${item.selected?'checked':''} onchange="batchItems[${i}].selected=this.checked">
+      <span class="bi-num">#${i+1}</span>
+      <span class="bi-data" title="${esc(item.data)}">${esc(item.data.substring(0,60))}</span>
+    </div>`).join('');
+}
+
+function selAll(v) { batchItems.forEach(x=>x.selected=v); renderBatchList(); }
+
+async function runBatch() {
+  const sel = batchItems.filter(x=>x.selected);
+  if (!sel.length) { toast('กรุณาเลือกรายการก่อน','error'); return; }
+
+  const fore = document.getElementById('bc-fore').value;
+  const back = document.getElementById('bc-back').value;
+  const size = parseInt(document.getElementById('bc-size').value);
+  const ecl  = document.getElementById('bc-ecl').value;
+  const useLogo = document.getElementById('bc-logo').checked && logoEnabled && !!logoBase64;
+
+  document.getElementById('batch-prog-wrap').style.display = 'block';
+  document.getElementById('batch-empty-msg').style.display = 'none';
+  batchCanvases = [];
+
+  // Build canvases
+  for (let i = 0; i < sel.length; i++) {
+    const item = sel[i];
+    const pct = Math.round(((i+1)/sel.length)*100);
+    document.getElementById('b-prog-lbl').textContent = `สร้าง ${i+1}/${sel.length}: ${item.data.substring(0,30)}`;
+    document.getElementById('b-prog-pct').textContent = pct + '%';
+    document.getElementById('b-prog-bar').style.width = pct + '%';
+
+    const canvas = document.createElement('canvas');
+    await new Promise(res => {
+      QRCode.toCanvas(canvas, item.data, {
+        width:size, color:{dark:fore,light:back}, errorCorrectionLevel:ecl, margin:2
+      }, ()=>res());
+    });
+    if (useLogo) {
+      const sl = Math.round(logoSize * (size/240));
+      await drawLogoOnCanvas(canvas, logoBase64, sl);
+    }
+    batchCanvases.push({ canvas, label:item.data.substring(0,30), data:item.data });
+    await new Promise(r=>setTimeout(r,10));
+  }
+
+  // Save batch to Sheets in one call
+  showLoader('กำลังบันทึก Batch ลง Sheets...');
+  try {
+    const result = await gasCall('generateBatch', {
+      items: sel.map(x=>({ type:'batch', data:x.data, label:x.data.substring(0,40) })),
+      foreColor: fore, backColor: back, hasLogo: useLogo
+    });
+    if (!result.demo) {
+      if (result.error) throw new Error(result.error);
+      toast(`✓ บันทึก ${result.count} รายการลง Sheets สำเร็จ`, 'success');
+    } else {
+      toast(`สร้าง ${batchCanvases.length} QR สำเร็จ (โหมดตัวอย่าง)`, 'info');
+    }
+  } catch(e) {
+    toast('บันทึก Sheets ไม่สำเร็จ: ' + e.message, 'info');
+  } finally { hideLoader(); }
+
+  ['btn-dl-all','btn-prev-batch','btn-batch-drive'].forEach(id=>
+    document.getElementById(id).disabled = false
+  );
+}
+
+function previewBatchModal() {
+  const grid = document.getElementById('batch-grid');
+  grid.innerHTML = '';
+  batchCanvases.forEach(({canvas,label}) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'bgi';
+    const c2 = document.createElement('canvas');
+    c2.width = canvas.width; c2.height = canvas.height;
+    c2.getContext('2d').drawImage(canvas,0,0);
+    const l = document.createElement('div');
+    l.className='bgi-lbl'; l.textContent=label; l.title=label;
+    wrap.appendChild(c2); wrap.appendChild(l);
+    grid.appendChild(wrap);
+  });
+  document.getElementById('batch-modal').classList.add('visible');
+}
+function closeBatchModal() { document.getElementById('batch-modal').classList.remove('visible'); }
+
+function downloadAllBatch() {
+  if (!batchCanvases.length) return;
+  batchCanvases.forEach(({canvas,data},i) => {
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.download = `QR_${String(i+1).padStart(3,'0')}_${data.substring(0,20).replace(/[^a-zA-Z0-9ก-๙]/g,'_')}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }, i * 150);
+  });
+  toast(`กำลังดาวน์โหลด ${batchCanvases.length} ไฟล์...`, 'info');
+}
+
+async function saveBatchToDrive() {
+  if (!batchCanvases.length) return;
+  showLoader('กำลังอัปโหลด Batch ขึ้น Drive...');
+  try {
+    const items = batchCanvases.map((bc,i) => ({
+      imageBase64: bc.canvas.toDataURL('image/png'),
+      refId: `BCH${String(i+1).padStart(4,'0')}`
+    }));
+    const result = await gasCall('saveQRBatchToDrive', { items });
+    if (result.demo) { toast('ฟีเจอร์นี้ใช้ได้เฉพาะใน GAS','info'); return; }
+    if (result.error) throw new Error(result.error);
+    const ok = result.results.filter(r=>r.ok).length;
+    toast(`☁ อัปโหลด Drive สำเร็จ ${ok}/${items.length} ไฟล์`, 'success');
+  } catch(e) { toast('เกิดข้อผิดพลาด: '+e.message,'error'); }
+  finally { hideLoader(); }
+}
+
+// ─── HISTORY (Sheets only) ───────────────────────────────
+async function loadHistory(page) {
+  if (page !== undefined) histPage = page;
+  const tbody = document.getElementById('hist-tbody');
+  tbody.innerHTML = `<tr><td colspan="9"><div class="empty" style="padding:36px"><div class="empty-icon" style="animation:spin .8s linear infinite;display:inline-block">⟳</div><h3>กำลังโหลดจาก Sheets...</h3></div></td></tr>`;
+
+  try {
+    const result = await gasCall('getHistory', {
+      limit: HIST_LIMIT, offset: histPage * HIST_LIMIT, search: histSearch
+    });
+    if (result.demo) {
+      tbody.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="empty-icon">📋</div><h3>โหมดตัวอย่าง</h3><p>ติดตั้งผ่าน Google Apps Script เพื่อดูประวัติจาก Sheets</p></div></td></tr>`;
+      updateStats({ total:0,file:0,drive:0,batch:0 });
+      return;
+    }
+    if (result.error) throw new Error(result.error);
+
+    const records = result.records || [];
+    renderHistoryTable(records);
+    renderPager(result.total || records.length);
+
+    // Stats
+    const total = result.total || records.length;
+    updateStats({
+      total,
+      file:  records.filter(r=>r.type==='file'||r.source==='file').length,
+      drive: records.filter(r=>r.driveId).length,
+      batch: records.filter(r=>r.type==='batch'||r.source==='batch').length
+    });
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="empty-icon">⚠️</div><h3>โหลดไม่ได้</h3><p>${e.message}</p></div></td></tr>`;
+  }
+}
+
+function searchHistory(q) {
+  histSearch = q; histPage = 0;
+  clearTimeout(window._histTimer);
+  window._histTimer = setTimeout(() => loadHistory(0), 400);
+}
+
+function renderHistoryTable(records) {
+  const tbody = document.getElementById('hist-tbody');
+  if (!records.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty"><div class="empty-icon">📋</div><h3>ยังไม่มีประวัติ</h3><p>สร้าง QR Code แล้วจะปรากฏที่นี่ (บันทึกจาก Sheets)</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = records.map(r => {
+    const badge = TYPE_BADGES[r.type] || 'b-gray';
+    const dBtn  = r.driveId
+      ? `<a href="https://drive.google.com/file/d/${r.driveId}/view" target="_blank" class="btn btn-ol btn-sm">☁</a>`
+      : '—';
+    return `<tr>
+      <td><span class="refcode-sm">${esc(r.refId||'—')}</span></td>
+      <td><span class="badge ${badge}">${esc(r.type||'—')}</span></td>
+      <td style="font-size:12px;color:var(--gray-600)">${esc(r.source||'manual')}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${esc(r.data||'')}">${esc((r.data||'').substring(0,60))}</td>
+      <td><div style="display:flex;gap:5px;align-items:center">
+        <div style="width:16px;height:16px;border-radius:3px;background:${r.foreColor||'#000'};border:1px solid var(--gray-200)"></div>
+        <div style="width:16px;height:16px;border-radius:3px;background:${r.backColor||'#fff'};border:1px solid var(--gray-200)"></div>
+      </div></td>
+      <td style="font-size:12px;text-align:center">${r.hasLogo||'—'}</td>
+      <td style="font-size:11px;color:var(--gray-600);white-space:nowrap">${esc(r.createdAt||'')}</td>
+      <td>${dBtn}</td>
+      <td><button class="btn btn-red btn-sm" onclick="deleteRow('${esc(r.refId||'')}')">🗑</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPager(total) {
+  const totalPages = Math.ceil(total / HIST_LIMIT);
+  const el = document.getElementById('hist-pager');
+  if (totalPages <= 1) { el.innerHTML = `<span style="color:var(--gray-400)">ทั้งหมด ${total} รายการ</span>`; return; }
+  el.innerHTML = `
+    <button class="btn btn-ol btn-sm" onclick="loadHistory(${histPage-1})" ${histPage===0?'disabled':''}>← ก่อนหน้า</button>
+    <span style="color:var(--gray-600)">หน้า ${histPage+1} / ${totalPages} (ทั้งหมด ${total} รายการ)</span>
+    <button class="btn btn-ol btn-sm" onclick="loadHistory(${histPage+1})" ${histPage>=totalPages-1?'disabled':''}>ถัดไป →</button>`;
+}
+
+function updateStats(s) {
+  document.getElementById('st-total').textContent = s.total ?? '—';
+  document.getElementById('st-file').textContent  = s.file  ?? '—';
+  document.getElementById('st-drive').textContent = s.drive ?? '—';
+  document.getElementById('st-batch').textContent = s.batch ?? '—';
+}
+
+async function deleteRow(refId) {
+  if (!refId || !confirm(`ลบรายการ ${refId} ออกจาก Sheets?`)) return;
+  showLoader('กำลังลบ...');
+  try {
+    const r = await gasCall('deleteHistoryRow', refId);
+    if (r.error) throw new Error(r.error);
+    toast('ลบสำเร็จ', 'success');
+    loadHistory();
+  } catch(e) { toast('ลบไม่ได้: '+e.message,'error'); }
+  finally { hideLoader(); }
+}
+
+async function confirmClear() {
+  if (!confirm('ต้องการล้างประวัติทั้งหมดใน Sheets? ไม่สามารถกู้คืนได้')) return;
+  showLoader('กำลังล้าง Sheets...');
+  try {
+    await gasCall('clearHistory', {});
+    toast('ล้างประวัติสำเร็จ','success');
+    loadHistory();
+  } catch(e) { toast('เกิดข้อผิดพลาด: '+e.message,'error'); }
+  finally { hideLoader(); }
+}
+
+// ─── SETTINGS ────────────────────────────────────────────
+async function loadSettings() {
+  document.getElementById('sheets-status').className = 'si-box si-info';
+  document.getElementById('sheets-status').innerHTML = '<div class="si-dot"></div>กำลังตรวจสอบ...';
+  try {
+    const cfg = await gasCall('getConfig', {});
+    if (cfg.demo) {
+      setStatus('sheets-status','info','โหมดตัวอย่าง — ยังไม่ได้เชื่อมต่อ Google Apps Script');
+      return;
+    }
+    if (cfg.error) throw new Error(cfg.error);
+    document.getElementById('drive-folder-id').value = cfg.drive_folder_id || '';
+    document.getElementById('org-name').value         = cfg.org_name || '';
+    document.getElementById('theme-primary').value    = cfg.primary_color || '#0d2137';
+    document.getElementById('theme-accent').value     = cfg.accent_color  || '#c9a227';
+    // Load logo from Sheets
+    if (cfg.logo_base64) {
+      logoBase64 = cfg.logo_base64;
+      logoSize   = parseInt(cfg.logo_size || '60');
+      document.getElementById('logo-size').value = logoSize;
+      document.getElementById('logo-size-val').textContent = logoSize + ' px';
+      document.getElementById('logo-thumb').innerHTML = `<img src="${logoBase64}" alt="logo">`;
+      document.getElementById('settings-logo-thumb').innerHTML = `<img src="${logoBase64}" alt="logo">`;
+      document.getElementById('settings-logo-name').textContent = 'โลโก้จาก Sheets';
+      document.getElementById('btn-clear-logo').style.display = '';
+    }
+    setStatus('sheets-status','ok','เชื่อมต่อ Google Sheets สำเร็จ ✓');
+  } catch(e) {
+    setStatus('sheets-status','err','เชื่อมต่อไม่ได้: ' + e.message);
+  }
+}
+
+async function saveSettings() {
+  showLoader('กำลังบันทึกการตั้งค่า...');
+  try {
+    const r = await gasCall('saveConfig', {
+      drive_folder_id: g('drive-folder-id'),
+      org_name:        g('org-name'),
+      primary_color:   document.getElementById('theme-primary').value,
+      accent_color:    document.getElementById('theme-accent').value
+    });
+    if (r.demo) { toast('โหมดตัวอย่าง','info'); return; }
+    if (r.error) throw new Error(r.error);
+    toast('บันทึกการตั้งค่าสำเร็จ','success');
+  } catch(e) { toast('เกิดข้อผิดพลาด: '+e.message,'error'); }
+  finally { hideLoader(); }
+}
+
+async function testDrive() {
+  const fId = g('drive-folder-id');
+  if (!fId) { toast('กรุณาใส่ Folder ID','error'); return; }
+  showLoader('ทดสอบเชื่อมต่อ Drive...');
+  try {
+    const r = await gasCall('testDriveConnection', {folderId:fId});
+    if (r.demo) { setStatus('drive-status','info','โหมดตัวอย่าง'); return; }
+    if (r.error) throw new Error(r.error);
+    setStatus('drive-status','ok',`เชื่อมต่อสำเร็จ: "${r.folderName}"`);
+    toast('เชื่อมต่อ Drive สำเร็จ','success');
+  } catch(e) {
+    setStatus('drive-status','err',e.message);
+    toast('เชื่อมต่อไม่ได้','error');
+  } finally { hideLoader(); }
+}
+
+async function testConnection() { await loadSettings(); toast('ทดสอบเสร็จสิ้น','info'); }
+
+function setStatus(id, type, msg) {
+  const el = document.getElementById(id);
+  const cls = {ok:'si-ok',err:'si-err',info:'si-info'};
+  el.className = 'si-box ' + (cls[type]||'si-info');
+  el.innerHTML = `<div class="si-dot"></div>${msg}`;
+}
+
+// ─── UI HELPERS ──────────────────────────────────────────
+function showLoader(t='กำลังดำเนินการ...') { document.getElementById('ldr-txt').textContent=t; document.getElementById('ldr').classList.add('on'); }
+function hideLoader() { document.getElementById('ldr').classList.remove('on'); }
+
+function toast(msg, type='info') {
+  const c = document.getElementById('tcon');
+  const el = document.createElement('div');
+  el.className = `toast t-${type==='success'?'ok':type==='error'?'err':'info'}`;
+  el.innerHTML = `<span>${{success:'✓',error:'✕',info:'ℹ'}[type]||'ℹ'}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(()=>el.remove(), 4500);
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtBytes(b) { if(b<1024)return b+'B'; if(b<1048576)return (b/1024).toFixed(1)+'KB'; return (b/1048576).toFixed(1)+'MB'; }
+function rdText(f) { return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsText(f,'UTF-8')}); }
+function rdAB(f)   { return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsArrayBuffer(f)}); }
+
+function tblHtml(rows, headers) {
+  if (!rows?.length) return '<em>ไม่มีข้อมูล</em>';
+  const cols = headers||Object.keys(rows[0]||{});
+  let h = `<table style="font-size:11px;border-collapse:collapse;width:100%"><thead><tr>`;
+  cols.forEach(c=>h+=`<th style="padding:4px 8px;background:var(--navy);color:var(--gold-light);text-align:left;white-space:nowrap">${esc(c)}</th>`);
+  h+=`</tr></thead><tbody>`;
+  rows.forEach(r=>{
+    h+=`<tr>`;
+    cols.forEach(c=>h+=`<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100)">${esc(String(r[c]??''))}</td>`);
+    h+=`</tr>`;
+  });
+  return h+'</tbody></table>';
+}
+
+// ═══════════════════════════════════════════════════════════
+// FILE UPLOAD → DRIVE → QR
+// ═══════════════════════════════════════════════════════════
+
+let ufQueue    = [];   // [{ file, name, size, mime, base64, status, result }]
+let ufResults  = [];   // completed results with QR canvases
+
+// Drag & drop
+function ufDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const files = [...e.dataTransfer.files];
+  if (files.length) ufAddFiles(files);
+}
+function ufSelect(e) {
+  ufAddFiles([...e.target.files]);
+  e.target.value = '';
+}
+
+function ufAddFiles(files) {
+  files.forEach(f => {
+    if (!ufQueue.find(q => q.name === f.name && q.size === f.size)) {
+      ufQueue.push({ file: f, name: f.name, size: f.size, mime: f.type || 'application/octet-stream', base64: null, status: 'pending' });
+    }
+  });
+  ufRenderQueue();
+  document.getElementById('uf-btn-upload').disabled = ufQueue.length === 0;
+}
+
+function ufRenderQueue() {
+  const el  = document.getElementById('uf-file-list');
+  const cnt = document.getElementById('uf-queue-count');
+  const wrap = document.getElementById('uf-queue');
+
+  if (!ufQueue.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  cnt.textContent = ufQueue.length + ' ไฟล์ (รวม ' + fmtBytes(ufQueue.reduce((s,f)=>s+f.size,0)) + ')';
+
+  const statusIcon = { pending:'⏳', uploading:'🔄', done:'✅', error:'❌' };
+  const statusClr  = { pending:'var(--gray-400)', uploading:'var(--blue)', done:'var(--green)', error:'var(--red)' };
+
+  el.innerHTML = ufQueue.map((f,i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+      background:var(--white);border:1.5px solid ${f.status==='done'?'#a7f3d0':f.status==='error'?'#fca5a5':'var(--gray-200)'};
+      border-radius:var(--r);transition:var(--tr)">
+      <div style="font-size:22px;flex-shrink:0">${ufFileIcon(f.mime, f.name)}</div>
+      <div style="flex:1;overflow:hidden">
+        <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</div>
+        <div style="font-size:11px;color:var(--gray-600)">${fmtBytes(f.size)} · ${f.mime}</div>
+        ${f.status==='done' && f.result ? `<div style="font-size:11px;color:var(--green);margin-top:2px">✓ อัปโหลดสำเร็จ · <a href="${f.result.viewUrl}" target="_blank" style="color:var(--blue)">เปิดดูใน Drive</a></div>` : ''}
+        ${f.status==='error' ? `<div style="font-size:11px;color:var(--red);margin-top:2px">✕ ${esc(f.error||'เกิดข้อผิดพลาด')}</div>` : ''}
+      </div>
+      <div style="font-size:18px;color:${statusClr[f.status]||'var(--gray-400)'}">${statusIcon[f.status]||'⏳'}</div>
+      ${f.status==='pending'?`<button onclick="ufRemove(${i})" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--gray-400);line-height:1">✕</button>`:''}
+    </div>`).join('');
+}
+
+function ufRemove(i) {
+  ufQueue.splice(i, 1);
+  ufRenderQueue();
+  document.getElementById('uf-btn-upload').disabled = ufQueue.length === 0;
+}
+
+function ufClearQueue() {
+  ufQueue = ufQueue.filter(f => f.status === 'done'); // keep done ones
+  ufRenderQueue();
+  document.getElementById('uf-btn-upload').disabled = ufQueue.filter(f=>f.status==='pending').length === 0;
+}
+
+function ufFileIcon(mime, name) {
+  const ext = name.split('.').pop().toLowerCase();
+  if (mime.startsWith('image/'))       return '🖼️';
+  if (mime.startsWith('video/'))       return '🎬';
+  if (mime.startsWith('audio/'))       return '🎵';
+  if (mime === 'application/pdf')      return '📕';
+  if (ext==='docx'||ext==='doc')       return '📘';
+  if (ext==='xlsx'||ext==='xls')       return '📗';
+  if (ext==='pptx'||ext==='ppt')       return '📙';
+  if (ext==='zip'||ext==='rar'||ext==='7z') return '🗜️';
+  return '📄';
+}
+
+async function ufUploadAll() {
+  const pending = ufQueue.filter(f => f.status === 'pending');
+  if (!pending.length) { toast('ไม่มีไฟล์ที่รอส่ง', 'error'); return; }
+
+  document.getElementById('uf-btn-upload').disabled = true;
+  ufResults = [];
+
+  // Show progress in result body
+  document.getElementById('uf-result-body').innerHTML = `
+    <div class="prog-wrap" style="padding:8px 0">
+      <div class="prog-lbl"><span id="uf-prog-txt">กำลังอ่านไฟล์...</span><span id="uf-prog-pct">0%</span></div>
+      <div class="prog-bg"><div class="prog-fill" id="uf-prog-bar" style="width:0%"></div></div>
+    </div>`;
+
+  const linkType = document.querySelector('input[name="uf-link-type"]:checked')?.value || 'view';
+  const fore     = document.getElementById('uf-fore').value;
+  const back     = document.getElementById('uf-back').value;
+  const size     = parseInt(document.getElementById('uf-size').value);
+  const ecl      = document.getElementById('uf-ecl').value;
+  const useLogo  = document.getElementById('uf-use-logo').checked && logoEnabled && !!logoBase64;
+
+  for (let i = 0; i < ufQueue.length; i++) {
+    const item = ufQueue[i];
+    if (item.status !== 'pending') continue;
+
+    const pct = Math.round(((i + 1) / ufQueue.length) * 100);
+    item.status = 'uploading';
+    ufRenderQueue();
+
+    const progTxt = document.getElementById('uf-prog-txt');
+    const progPct = document.getElementById('uf-prog-pct');
+    const progBar = document.getElementById('uf-prog-bar');
+    if (progTxt) progTxt.textContent = `กำลังอัปโหลด: ${item.name}`;
+    if (progPct) progPct.textContent = pct + '%';
+    if (progBar) progBar.style.width = pct + '%';
+
+    try {
+      // Read file as base64
+      item.base64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload  = e => res(e.target.result);
+        r.onerror = rej;
+        r.readAsDataURL(item.file);
+      });
+
+      // Upload to Drive via GAS
+      const result = await gasCall('uploadFileToDrive', {
+        base64:    item.base64,
+        fileName:  item.name,
+        mimeType:  item.mime,
+        foreColor: fore,
+        backColor: back,
+        hasLogo:   useLogo
+      });
+
+      if (result.error) throw new Error(result.error);
+
+      if (result.demo) {
+        // Demo mode: simulate result
+        result.viewUrl     = 'https://drive.google.com/file/d/DEMO_ID/view';
+        result.downloadUrl = 'https://drive.google.com/uc?export=download&id=DEMO_ID';
+        result.fileId      = 'DEMO_ID';
+        result.fileName    = item.name;
+        result.refId       = 'DRV' + Math.random().toString(36).substr(2,6).toUpperCase();
+      }
+
+      // Choose link type
+      const qrUrl = linkType === 'download' ? result.downloadUrl : result.viewUrl;
+
+      // Build QR canvas
+      const canvas = document.createElement('canvas');
+      await new Promise(res => {
+        QRCode.toCanvas(canvas, qrUrl, {
+          width: size, color: { dark: fore, light: back }, errorCorrectionLevel: ecl, margin: 2
+        }, () => res());
+      });
+
+      if (useLogo && logoBase64) {
+        const sl = Math.round(logoSize * (size / 240));
+        await drawLogoOnCanvas(canvas, logoBase64, sl);
+      }
+
+      item.status = 'done';
+      item.result = { ...result, qrUrl, canvas };
+      ufResults.push({ ...item.result, name: item.name, size: item.size, mime: item.mime });
+
+    } catch (e) {
+      item.status = 'error';
+      item.error  = e.message;
+    }
+    ufRenderQueue();
+  }
+
+  // Render result cards
+  ufRenderResultCards();
+  document.getElementById('uf-btn-upload').disabled  = false;
+  document.getElementById('uf-btn-dl-all').disabled  = ufResults.length === 0;
+
+  const ok  = ufQueue.filter(f => f.status === 'done').length;
+  const err = ufQueue.filter(f => f.status === 'error').length;
+  if (ok)  toast(`✅ อัปโหลดสำเร็จ ${ok} ไฟล์`, 'success');
+  if (err) toast(`❌ อัปโหลดไม่สำเร็จ ${err} ไฟล์`, 'error');
+
+  // update result body
+  document.getElementById('uf-result-body').innerHTML =
+    `<div style="text-align:center;padding:16px;color:var(--green);font-weight:600">
+      ✅ อัปโหลดเสร็จสิ้น ${ok}/${ufQueue.length} ไฟล์
+     </div>`;
+}
+
+function ufRenderResultCards() {
+  const grid = document.getElementById('uf-result-cards');
+  const wrap = document.getElementById('uf-results-grid');
+  if (!ufResults.length) { wrap.style.display = 'none'; return; }
+
+  wrap.style.display = 'block';
+  document.getElementById('uf-result-count').textContent = `(${ufResults.length} ไฟล์)`;
+
+  grid.innerHTML = ufResults.map((r, i) => {
+    const dataUrl = r.canvas?.toDataURL('image/png') || '';
+    return `
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--rl);overflow:hidden;box-shadow:var(--shadow-sm)">
+      <!-- QR preview -->
+      <div style="background:var(--gray-50);display:flex;align-items:center;justify-content:center;padding:20px">
+        ${dataUrl ? `<img src="${dataUrl}" style="width:160px;height:160px;border-radius:4px;box-shadow:var(--shadow-md)">` : '<div style="width:160px;height:160px;background:var(--gray-200);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--gray-400)">QR</div>'}
+      </div>
+      <!-- File info -->
+      <div style="padding:14px 16px;border-top:1px solid var(--gray-200)">
+        <div style="font-size:13px;font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:4px">${esc(r.name)}</div>
+        <div style="font-size:11px;color:var(--gray-600);margin-bottom:10px">${fmtBytes(r.size)} · ${esc(r.refId||'')}</div>
+        <!-- Link display -->
+        <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;padding:8px 10px;margin-bottom:10px">
+          <div style="font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">ลิงก์ QR</div>
+          <div style="font-size:11px;color:var(--blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'IBM Plex Mono',monospace">
+            <a href="${esc(r.qrUrl)}" target="_blank">${esc(r.qrUrl)}</a>
+          </div>
+        </div>
+        <!-- Actions -->
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;gap:6px">
+            <a href="${esc(r.viewUrl)}" target="_blank" class="btn btn-ol btn-sm" style="flex:1;text-align:center;justify-content:center">👁 ดูไฟล์</a>
+            <a href="${esc(r.downloadUrl)}" target="_blank" class="btn btn-ol btn-sm" style="flex:1;text-align:center;justify-content:center">⬇ โหลดไฟล์</a>
+          </div>
+          <button class="btn btn-gold btn-sm btn-full" onclick="ufDownloadQR(${i})">⬇ ดาวน์โหลด QR PNG</button>
+          <button class="btn btn-ol btn-sm btn-full" onclick="ufCopyLink(${i})">📋 คัดลอกลิงก์</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function ufDownloadQR(i) {
+  const r = ufResults[i];
+  if (!r?.canvas) return;
+  const a = document.createElement('a');
+  a.download = `QR_${r.name.replace(/\.[^.]+$/,'')}.png`;
+  a.href = r.canvas.toDataURL('image/png');
+  a.click();
+  toast('ดาวน์โหลด QR สำเร็จ', 'success');
+}
+
+function ufDownloadAllQR() {
+  if (!ufResults.length) return;
+  ufResults.forEach((r, i) => {
+    if (!r.canvas) return;
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.download = `QR_${r.name.replace(/\.[^.]+$/,'')}.png`;
+      a.href = r.canvas.toDataURL('image/png');
+      a.click();
+    }, i * 200);
+  });
+  toast(`กำลังดาวน์โหลด QR ${ufResults.length} ไฟล์...`, 'info');
+}
+
+function ufCopyLink(i) {
+  const r = ufResults[i];
+  if (!r) return;
+  navigator.clipboard.writeText(r.qrUrl).then(() => toast('คัดลอกลิงก์สำเร็จ', 'success'));
+}
+
+function ufPreset(fore, back, btn) {
+  document.getElementById('uf-fore').value = fore;
+  document.getElementById('uf-back').value = back;
+  document.querySelectorAll('#uf-presets .pset').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function ufPreviewUpdate() { /* no live preview needed here — preview happens after upload */ }
+
+
+// ═══════════════════════════════════════════════════════════
+// UPLOAD FILE → DRIVE → QR
+// ═══════════════════════════════════════════════════════════
+
+let uploadQueue   = [];   // [{ file, id, status, result }]
+let uploadResults = [];   // [{ refId, fileName, viewUrl, downloadUrl, canvas }]
+
+// File icons by extension
+const FILE_ICONS = {
+  pdf:'📕', doc:'📘', docx:'📘', xls:'📗', xlsx:'📗', csv:'📊',
+  ppt:'📙', pptx:'📙', txt:'📄', md:'📄', json:'📋', xml:'🗂️',
+  jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🖼️', webp:'🖼️', svg:'🎨',
+  mp4:'🎬', mov:'🎬', avi:'🎬', mp3:'🎵', wav:'🎵',
+  zip:'📦', rar:'📦', '7z':'📦', tar:'📦', gz:'📦',
+  default:'📄'
+};
+function fileIcon(name) {
+  const ext = (name||'').split('.').pop().toLowerCase();
+  return FILE_ICONS[ext] || FILE_ICONS.default;
+}
+
+// ─── DRAG & DROP (upload zone) ────────────────────────────
+function uDragOver(e) {
+  e.preventDefault();
+  document.getElementById('udrop').classList.add('drag-over');
+}
+function uDragLeave(e) {
+  document.getElementById('udrop').classList.remove('drag-over');
+}
+function uDrop(e) {
+  e.preventDefault();
+  document.getElementById('udrop').classList.remove('drag-over');
+  addFilesToQueue([...e.dataTransfer.files]);
+}
+function uFilePicked(e) {
+  addFilesToQueue([...e.target.files]);
+  e.target.value = ''; // reset so same file can be re-added
+}
+
+// ─── QUEUE MANAGEMENT ────────────────────────────────────
+function addFilesToQueue(files) {
+  files.forEach(f => {
+    uploadQueue.push({ file: f, id: 'uq_' + Date.now() + Math.random(), status: 'pending' });
+  });
+  renderQueue();
+}
+
+function removeFromQueue(id) {
+  uploadQueue = uploadQueue.filter(x => x.id !== id);
+  renderQueue();
+}
+
+function clearUploadQueue() {
+  uploadQueue   = [];
+  uploadResults = [];
+  renderQueue();
+  document.getElementById('u-results-section').style.display = 'none';
+  document.getElementById('u-results-grid').innerHTML        = '';
+  document.getElementById('u-overall-prog').classList.remove('visible');
+}
+
+function renderQueue() {
+  const el       = document.getElementById('u-queue');
+  const idleEl   = document.getElementById('u-action-idle');
+  const readyEl  = document.getElementById('u-action-ready');
+  const startBtn = document.getElementById('btn-start-upload');
+
+  if (!uploadQueue.length) {
+    el.style.display = 'none';
+    idleEl.style.display  = 'block';
+    readyEl.style.display = 'none';
+    startBtn.disabled     = true;
+    document.getElementById('udrop').classList.remove('has-files');
+    return;
+  }
+
+  el.style.display = 'flex';
+  document.getElementById('udrop').classList.add('has-files');
+  idleEl.style.display  = 'none';
+  readyEl.style.display = 'block';
+
+  // Count + total size
+  const pendingFiles = uploadQueue.filter(x => x.status === 'pending');
+  const totalBytes   = uploadQueue.reduce((s, x) => s + x.file.size, 0);
+  document.getElementById('u-ready-count').textContent = `${pendingFiles.length} ไฟล์พร้อมอัปโหลด`;
+  document.getElementById('u-ready-size').textContent  = fmtBytes(totalBytes);
+  startBtn.disabled = pendingFiles.length === 0;
+
+  el.innerHTML = uploadQueue.map(item => {
+    const statusText  = { pending:'รอ', uploading:'กำลังอัปโหลด...', done:'✓ สำเร็จ', error:'✕ ผิดพลาด' };
+    const statusClass = { pending:'', uploading:'uploading', done:'done', error:'error' };
+    return `
+      <div class="fq-item ${statusClass[item.status]||''}" id="${item.id}">
+        <div class="fq-icon">${fileIcon(item.file.name)}</div>
+        <div class="fq-info">
+          <div class="fq-name" title="${esc(item.file.name)}">${esc(item.file.name)}</div>
+          <div class="fq-meta">${fmtBytes(item.file.size)} · .${item.file.name.split('.').pop().toUpperCase()}
+            ${item.result?.viewUrl ? `· <a href="${item.result.viewUrl}" target="_blank" style="color:var(--blue-light)">เปิด Drive ↗</a>` : ''}
+          </div>
+        </div>
+        <div class="fq-status ${statusClass[item.status]||''}">${statusText[item.status]||''}</div>
+        ${item.status==='pending' ? `<button class="fq-remove" onclick="removeFromQueue('${item.id}')" title="ลบ">✕</button>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function uPreset(fore, back, btn) {
+  document.getElementById('u-fore').value = fore;
+  document.getElementById('u-back').value = back;
+  document.querySelectorAll('#u-presets .pset').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+// ─── MAIN UPLOAD FLOW ─────────────────────────────────────
+async function startUpload() {
+  const pending = uploadQueue.filter(x => x.status === 'pending');
+  if (!pending.length) { toast('ไม่มีไฟล์ที่รอ', 'error'); return; }
+
+  const fore       = document.getElementById('u-fore').value;
+  const back       = document.getElementById('u-back').value;
+  const size       = parseInt(document.getElementById('u-size').value);
+  const linkType   = document.getElementById('u-link-type').value;
+  const useLogo    = document.getElementById('u-use-logo').checked && logoEnabled && !!logoBase64;
+
+  // Show progress
+  const progEl = document.getElementById('u-overall-prog');
+  progEl.classList.add('visible');
+  document.getElementById('btn-start-upload').disabled = true;
+
+  let doneCount = 0;
+  const total   = pending.length;
+
+  for (const item of pending) {
+    item.status = 'uploading';
+    renderQueue();
+    updateUploadProg(doneCount, total, `กำลังอัปโหลด: ${item.file.name}`);
+
+    try {
+      // Read file → base64
+      const base64   = await rdDataURL(item.file);
+      const mimeType = item.file.type || 'application/octet-stream';
+
+      // Call GAS: upload to Drive
+      const result = await gasCall('uploadFileToDrive', {
+        base64, mimeType, fileName: item.file.name,
+        foreColor: fore, backColor: back, hasLogo: useLogo
+      });
+
+      if (result.demo) {
+        // Demo mode: simulate with a fake URL
+        const fakeId  = 'DEMO_' + Math.random().toString(36).slice(2,8).toUpperCase();
+        const fakeUrl = `https://drive.google.com/file/d/${fakeId}/view`;
+        item.status = 'done';
+        item.result = { viewUrl: fakeUrl, downloadUrl: fakeUrl, fileName: item.file.name, refId: 'DRV'+fakeId };
+        await buildUploadQRCard(item, fakeUrl, fore, back, size, useLogo);
+        toast('โหมดตัวอย่าง — ใช้ URL จำลอง', 'info');
+      } else if (result.error) {
+        throw new Error(result.error);
+      } else {
+        item.status = 'done';
+        item.result = result;
+        // Use view or download URL based on user preference
+        const qrUrl = linkType === 'download' ? result.downloadUrl : result.viewUrl;
+        await buildUploadQRCard(item, qrUrl, fore, back, size, useLogo);
+        toast(`☁ อัปโหลดสำเร็จ: ${result.fileName}`, 'success');
+      }
+    } catch (e) {
+      item.status = 'error';
+      item.errorMsg = e.message;
+      toast(`✕ ${item.file.name}: ${e.message}`, 'error');
+    }
+
+    doneCount++;
+    renderQueue();
+  }
+
+  updateUploadProg(doneCount, total, `เสร็จสิ้น ${doneCount}/${total} ไฟล์`);
+  document.getElementById('u-prog-icon').textContent  = '✓';
+  document.getElementById('u-prog-title').textContent = `อัปโหลดเสร็จสิ้น ${doneCount}/${total} ไฟล์`;
+
+  // Show results
+  if (uploadResults.length) {
+    document.getElementById('u-results-section').style.display = 'block';
+    document.getElementById('u-results-count').textContent = `${uploadResults.length} รายการ`;
+    document.getElementById('btn-dl-upload-all').disabled = false;
+    document.getElementById('u-results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function updateUploadProg(done, total, label) {
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('u-prog-lbl').textContent = label;
+  document.getElementById('u-prog-pct').textContent = pct + '%';
+  document.getElementById('u-prog-bar').style.width = pct + '%';
+}
+
+async function buildUploadQRCard(item, qrUrl, fore, back, size, useLogo) {
+  // Build canvas with QR
+  const canvas = document.createElement('canvas');
+  await new Promise(res => {
+    QRCode.toCanvas(canvas, qrUrl, {
+      width: size, color: { dark: fore, light: back }, errorCorrectionLevel: 'H', margin: 2
+    }, () => res());
+  });
+  if (useLogo && logoBase64) {
+    const ls = Math.round(logoSize * (size / 240));
+    await drawLogoOnCanvas(canvas, logoBase64, ls);
+  }
+
+  const refId = item.result?.refId || 'DRV' + Math.random().toString(36).slice(2,8).toUpperCase();
+  uploadResults.push({ refId, fileName: item.file.name, viewUrl: item.result?.viewUrl, downloadUrl: item.result?.downloadUrl, canvas });
+
+  // Render card into grid
+  const card = document.createElement('div');
+  card.className = 'qr-result-card';
+  card.innerHTML = `
+    <div class="qr-result-canvas-wrap" id="card-canvas-${refId}"></div>
+    <div class="qr-result-body">
+      <div class="qr-result-name" title="${esc(item.file.name)}">${fileIcon(item.file.name)} ${esc(item.file.name)}</div>
+      <div class="qr-result-links">
+        <a class="lnk-view" href="${item.result?.viewUrl||'#'}" target="_blank">👁 เปิดดูออนไลน์</a>
+        <a class="lnk-dl" href="${item.result?.downloadUrl||'#'}" target="_blank">⬇ ดาวน์โหลดไฟล์</a>
+      </div>
+      <div class="qr-result-dl">
+        <button class="btn btn-gold btn-sm btn-full" onclick="dlOneUploadQR('${refId}')">⬇ ดาวน์โหลด QR</button>
+      </div>
+    </div>`;
+  document.getElementById('u-results-grid').appendChild(card);
+  // Put canvas into card
+  document.getElementById('card-canvas-' + refId).appendChild(canvas);
+}
+
+// Download single QR from upload results
+function dlOneUploadQR(refId) {
+  const r = uploadResults.find(x => x.refId === refId);
+  if (!r) return;
+  const a = document.createElement('a');
+  a.download = `QR_${r.fileName.replace(/[^a-zA-Z0-9ก-๙.]/g,'_')}.png`;
+  a.href = r.canvas.toDataURL('image/png');
+  a.click();
+}
+
+// Download all QRs from upload results
+function dlAllUploadQR() {
+  if (!uploadResults.length) return;
+  uploadResults.forEach((r, i) => {
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.download = `QR_${String(i+1).padStart(2,'0')}_${r.fileName.replace(/[^a-zA-Z0-9ก-๙.]/g,'_')}.png`;
+      a.href = r.canvas.toDataURL('image/png');
+      a.click();
+    }, i * 120);
+  });
+  toast(`กำลังดาวน์โหลด ${uploadResults.length} ไฟล์...`, 'info');
+}
+
+// Helper: file → data URL
+function rdDataURL(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load logo from Sheets on startup
+  try {
+    const logoData = await gasCall('getLogo', {});
+    if (!logoData.demo && logoData.base64) {
+      logoBase64 = logoData.base64;
+      logoSize   = logoData.size || 60;
+      document.getElementById('logo-size').value = logoSize;
+      document.getElementById('logo-size-val').textContent = logoSize + ' px';
+      document.getElementById('logo-thumb').innerHTML = `<img src="${logoBase64}" alt="logo">`;
+      document.getElementById('settings-logo-thumb').innerHTML = `<img src="${logoBase64}" alt="logo">`;
+      document.getElementById('settings-logo-name').textContent = 'โลโก้จาก Sheets';
+      document.getElementById('btn-clear-logo').style.display = '';
+    }
+  } catch(e) {}
+  livePreview();
+});
+</script>
+</body>
+</html>
