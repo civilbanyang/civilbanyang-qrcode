@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR ProMaker v4 — ระบบสร้าง QR Code มืออาชีพ</title>
+<title>QR</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
@@ -11,104 +11,74 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
 <style>
-/* ═══════════════════════════════════════════════════
-   DESIGN SYSTEM — Royal Government v4
-   ═══════════════════════════════════════════════════ */
 :root{
-  --navy:#0d2137; --navy-mid:#163352; --navy-light:#1e4976;
-  --blue:#2563a8; --blue-light:#3a7bc8;
-  --gold:#c9a227; --gold-light:#e5bb40; --gold-pale:#f5e9c0;
-  --white:#fff; --gray-50:#f9fafb; --gray-100:#f0f2f5;
-  --gray-200:#dde2ea; --gray-400:#9aa3af; --gray-600:#5a6472; --gray-800:#2d3540;
-  --red:#c0392b; --green:#1a7a4a; --orange:#d35400;
-  --shadow-sm:0 1px 3px rgba(13,33,55,.12);
-  --shadow-md:0 4px 16px rgba(13,33,55,.14);
-  --shadow-lg:0 8px 32px rgba(13,33,55,.18);
-  --shadow-xl:0 16px 48px rgba(13,33,55,.22);
-  --r:8px; --rl:14px; --tr:all .22s cubic-bezier(.4,0,.2,1);
+  --navy:#0d2137;--navy-mid:#163352;--navy-light:#1e4976;
+  --blue:#2563a8;--blue-light:#3a7bc8;
+  --gold:#c9a227;--gold-light:#e5bb40;--gold-pale:#f5e9c0;
+  --white:#fff;--gray-50:#f9fafb;--gray-100:#f0f2f5;
+  --gray-200:#dde2ea;--gray-400:#9aa3af;--gray-600:#5a6472;--gray-800:#2d3540;
+  --red:#c0392b;--green:#1a7a4a;--orange:#d35400;
+  --shadow-sm:0 1px 3px rgba(13,33,55,.12);--shadow-md:0 4px 16px rgba(13,33,55,.14);
+  --shadow-lg:0 8px 32px rgba(13,33,55,.18);--shadow-xl:0 16px 48px rgba(13,33,55,.22);
+  --r:8px;--rl:14px;--tr:all .22s cubic-bezier(.4,0,.2,1);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:'Sarabun',sans-serif;font-size:15px;line-height:1.65;color:var(--gray-800);background:var(--gray-100);min-height:100vh}
-
-/* HEADER */
 .hdr{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 60%,var(--navy-light) 100%);border-bottom:3px solid var(--gold);padding:0 28px;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-lg)}
 .hdr-brand{display:flex;align-items:center;gap:12px}
-.hdr-logo{width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(201,162,39,.4);flex-shrink:0}
-.hdr-title{font-size:18px;font-weight:700;color:var(--white);letter-spacing:.02em}
+.hdr-logo{width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.hdr-title{font-size:18px;font-weight:700;color:#fff;letter-spacing:.02em}
 .hdr-title span{color:var(--gold-light)}
-.hdr-badge{font-size:10px;font-weight:700;background:var(--gold);color:var(--navy);padding:2px 7px;border-radius:4px;letter-spacing:.04em}
+.hdr-badge{font-size:10px;font-weight:700;background:var(--gold);color:var(--navy);padding:2px 7px;border-radius:4px}
 .hdr-nav{display:flex;align-items:center;gap:4px}
 .nav-btn{padding:7px 15px;border-radius:6px;font-size:14px;font-weight:500;font-family:'Sarabun',sans-serif;cursor:pointer;transition:var(--tr);border:none;color:rgba(255,255,255,.75);background:transparent;display:flex;align-items:center;gap:5px}
-.nav-btn:hover{background:rgba(255,255,255,.1);color:var(--white)}
-.nav-btn.active{background:var(--gold);color:var(--navy);font-weight:700;box-shadow:0 2px 8px rgba(201,162,39,.35)}
-
-/* LAYOUT */
+.nav-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-btn.active{background:var(--gold);color:var(--navy);font-weight:700}
 .app{max-width:1200px;margin:0 auto;padding:28px 20px 60px}
 .view{display:none}.view.active{display:block}
-
-/* PAGE HEADER */
 .ph{display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--gray-200)}
-.ph-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 100%);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:var(--shadow-md);flex-shrink:0}
+.ph-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:var(--shadow-md);flex-shrink:0}
 .ph h1{font-size:22px;font-weight:700;color:var(--navy)}
 .ph p{font-size:13px;color:var(--gray-600);margin-top:1px}
-
-/* GRID */
 .cgrid{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start}
 @media(max-width:860px){.cgrid{grid-template-columns:1fr}}
-
-/* CARD */
-.card{background:var(--white);border-radius:var(--rl);border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);overflow:hidden}
-.card-hdr{padding:15px 22px;background:linear-gradient(90deg,var(--navy) 0%,var(--navy-mid) 100%);display:flex;align-items:center;gap:10px}
+.card{background:#fff;border-radius:var(--rl);border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);overflow:hidden}
+.card-hdr{padding:15px 22px;background:linear-gradient(90deg,var(--navy),var(--navy-mid));display:flex;align-items:center;gap:10px}
 .card-step{width:26px;height:26px;background:var(--gold);color:var(--navy);border-radius:50%;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.card-hdr h2{font-size:15px;font-weight:700;color:var(--white);letter-spacing:.01em}
+.card-hdr h2{font-size:15px;font-weight:700;color:#fff}
 .card-body{padding:22px}
-
-/* MODE TABS */
-.mtabs{display:flex;gap:0;background:var(--gray-100);border-radius:var(--r);padding:4px;margin-bottom:20px}
+.mtabs{display:flex;background:var(--gray-100);border-radius:var(--r);padding:4px;margin-bottom:20px}
 .mtab{flex:1;padding:9px 8px;border-radius:6px;border:none;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:var(--tr);color:var(--gray-600);background:transparent;display:flex;align-items:center;justify-content:center;gap:5px}
-.mtab:hover{color:var(--navy)}
-.mtab.active{background:var(--white);color:var(--navy);box-shadow:var(--shadow-sm);border:1px solid var(--gray-200)}
-
-/* TYPE BTNS */
+.mtab.active{background:#fff;color:var(--navy);box-shadow:var(--shadow-sm);border:1px solid var(--gray-200)}
 .tgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:20px}
 .tbtn{padding:12px 4px;border-radius:var(--r);border:2px solid var(--gray-200);background:var(--gray-50);cursor:pointer;transition:var(--tr);display:flex;flex-direction:column;align-items:center;gap:6px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:500;color:var(--gray-600)}
 .tbtn:hover{border-color:var(--blue-light);background:#eef4fb;color:var(--blue)}
-.tbtn.active{border-color:var(--navy);background:var(--navy);color:var(--gold-light);box-shadow:var(--shadow-md)}
+.tbtn.active{border-color:var(--navy);background:var(--navy);color:var(--gold-light)}
 .tbtn-icon{font-size:20px}
-
-/* FIELDS */
 .field{margin-bottom:16px}.field:last-child{margin-bottom:0}
 .field label{display:block;font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:6px}
-.field label .req{color:var(--red);margin-left:3px}
-.field input,.field select,.field textarea{width:100%;padding:10px 14px;border:1.5px solid var(--gray-200);border-radius:var(--r);font-size:14px;font-family:'Sarabun',sans-serif;color:var(--gray-800);background:var(--white);transition:var(--tr);outline:none}
+.req{color:var(--red);margin-left:3px}
+.field input,.field select,.field textarea{width:100%;padding:10px 14px;border:1.5px solid var(--gray-200);border-radius:var(--r);font-size:14px;font-family:'Sarabun',sans-serif;color:var(--gray-800);background:#fff;transition:var(--tr);outline:none}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,168,.12)}
 .field textarea{resize:vertical;min-height:88px}
 .field input[type="color"]{padding:4px 6px;height:42px;cursor:pointer}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .dform{display:none}.dform.active{display:block}
-
-/* LOGO UPLOAD SECTION */
-.logo-section{border:1.5px dashed var(--gray-200);border-radius:var(--rl);overflow:hidden;transition:var(--tr)}
-.logo-section:hover{border-color:var(--gold)}
+.logo-section{border:1.5px dashed var(--gray-200);border-radius:var(--rl);overflow:hidden}
 .logo-hdr{padding:12px 18px;background:var(--gray-50);display:flex;align-items:center;justify-content:space-between}
-.logo-hdr-title{font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px}
+.logo-hdr-title{font-size:13px;font-weight:700;color:var(--navy)}
 .logo-body{padding:16px 18px}
 .logo-preview-wrap{display:flex;align-items:center;gap:16px;margin-bottom:14px}
 .logo-thumb{width:72px;height:72px;border-radius:10px;border:2px solid var(--gray-200);background:var(--gray-50);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;font-size:28px;color:var(--gray-400)}
 .logo-thumb img{width:100%;height:100%;object-fit:contain}
-.logo-drop-zone{position:relative;border:2px dashed var(--gray-200);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;transition:var(--tr);background:var(--white);flex:1}
-.logo-drop-zone:hover,.logo-drop-zone.drag-over{border-color:var(--gold);background:#fdf8ed}
+.logo-drop-zone{position:relative;border:2px dashed var(--gray-200);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;background:#fff;flex:1}
+.logo-drop-zone:hover{border-color:var(--gold);background:#fdf8ed}
 .logo-drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .logo-drop-label{font-size:12px;color:var(--gray-600);pointer-events:none}
 .logo-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.logo-size-label{font-size:13px;font-weight:600;color:var(--gray-800);white-space:nowrap}
-.logo-size-input{width:100px}
 .logo-note{font-size:11px;color:var(--gray-400);margin-top:10px;line-height:1.6}
-
-/* FILE UPLOAD ZONE */
 .upzone{border:2.5px dashed var(--gray-200);border-radius:var(--rl);padding:32px 20px;text-align:center;cursor:pointer;transition:var(--tr);background:var(--gray-50);position:relative}
 .upzone:hover,.upzone.drag-over{border-color:var(--blue);background:#eef4fb}
 .upzone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
@@ -120,66 +90,51 @@ body{font-family:'Sarabun',sans-serif;font-size:15px;line-height:1.65;color:var(
 .chip-d{background:#dbeafe;color:#1e40af}.chip-s{background:#d1fae5;color:#065f46}
 .chip-i{background:#fce7f3;color:#9d174d}.chip-p{background:#fee2e2;color:#991b1b}
 .chip-t{background:#f3f4f6;color:#374151}.chip-o{background:#ede9fe;color:#5b21b6}
-
 .fprev{display:none;border:1.5px solid var(--gray-200);border-radius:var(--rl);overflow:hidden;margin-top:14px}
 .fprev.visible{display:block}
 .fprev-hdr{padding:11px 16px;background:linear-gradient(90deg,var(--navy),var(--navy-mid));display:flex;align-items:center;justify-content:space-between;gap:10px}
-.fprev-name{font-size:13px;font-weight:600;color:var(--white);display:flex;align-items:center;gap:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fprev-name{font-size:13px;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fprev-meta{font-size:11px;color:rgba(255,255,255,.6);white-space:nowrap}
-.fprev-body{padding:14px;background:var(--white);max-height:260px;overflow-y:auto;font-size:13px;line-height:1.7}
+.fprev-body{padding:14px;background:#fff;max-height:260px;overflow-y:auto;font-size:13px;line-height:1.7}
 .fprev-body pre{white-space:pre-wrap;word-break:break-word;font-family:'IBM Plex Mono',monospace;font-size:12px}
-.fprev-body img{max-width:100%;border-radius:var(--r)}
 .extract-bar{display:none;padding:12px 16px;background:var(--gray-50);border-top:1px solid var(--gray-200);gap:8px;flex-wrap:wrap;align-items:center}
 .extract-bar.visible{display:flex}
 .ext-lbl{font-size:13px;font-weight:600;color:var(--gray-800);flex-shrink:0}
-
-/* BATCH */
 .batch-list{display:flex;flex-direction:column;gap:7px;margin-top:14px}
-.bi{display:flex;align-items:center;gap:10px;padding:9px 13px;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--r);transition:var(--tr)}
-.bi:hover{border-color:var(--blue-light)}
+.bi{display:flex;align-items:center;gap:10px;padding:9px 13px;background:#fff;border:1.5px solid var(--gray-200);border-radius:var(--r)}
 .bi-data{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bi-num{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;background:var(--gold-pale);color:var(--navy);padding:2px 7px;border-radius:4px;border:1px solid var(--gold);flex-shrink:0}
 .bi-chk{width:16px;height:16px;cursor:pointer;flex-shrink:0;accent-color:var(--navy)}
-
 .prog-wrap{margin-top:14px}
 .prog-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--gray-600);margin-bottom:6px}
 .prog-bg{height:8px;background:var(--gray-200);border-radius:4px;overflow:hidden}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--navy),var(--gold));border-radius:4px;transition:width .3s ease;width:0%}
-
-/* PRESETS */
 .presets{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
 .pset{width:32px;height:32px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:var(--tr)}
 .pset:hover,.pset.active{border-color:var(--navy);transform:scale(1.1)}
-
-/* PREVIEW CARD */
 .pcard{position:sticky;top:90px}
-.pqr-wrap{display:flex;align-items:center;justify-content:center;padding:24px;background:var(--gray-50);position:relative;min-height:200px}
+.pqr-wrap{display:flex;align-items:center;justify-content:center;padding:24px;background:var(--gray-50);min-height:200px}
 .prev-empty{text-align:center;padding:36px 20px;color:var(--gray-400)}
 .prev-empty-icon{font-size:46px;opacity:.35;margin-bottom:10px}
 .prev-empty-text{font-size:13px}
 .prev-meta{padding:13px 22px;background:var(--gray-50);border-top:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between}
 .refcode{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;background:var(--gold-pale);color:var(--navy);padding:4px 10px;border-radius:5px;border:1px solid var(--gold)}
 .prev-type{font-size:12px;color:var(--gray-600)}
-
-/* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:var(--r);font-size:14px;font-weight:600;font-family:'Sarabun',sans-serif;cursor:pointer;transition:var(--tr);border:none;white-space:nowrap}
-.btn-primary{background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 100%);color:var(--white);box-shadow:0 4px 14px rgba(13,33,55,.28)}
+.btn-primary{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;box-shadow:0 4px 14px rgba(13,33,55,.28)}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(13,33,55,.38)}
-.btn-gold{background:linear-gradient(135deg,var(--gold) 0%,var(--gold-light) 100%);color:var(--navy);box-shadow:0 4px 14px rgba(201,162,39,.28)}
-.btn-gold:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,162,39,.38)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--navy);box-shadow:0 4px 14px rgba(201,162,39,.28)}
+.btn-gold:hover{transform:translateY(-1px)}
 .btn-ol{background:transparent;border:1.5px solid var(--gray-200);color:var(--gray-600)}
 .btn-ol:hover{border-color:var(--navy);color:var(--navy);background:var(--gray-50)}
-.btn-red{background:var(--red);color:var(--white)}.btn-red:hover{background:#a93226}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#a93226}
 .btn-sm{padding:7px 13px;font-size:13px}
 .btn-full{width:100%;justify-content:center}
 .btn:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
 .astack{display:flex;flex-direction:column;gap:9px;padding:15px 22px;border-top:1px solid var(--gray-200)}
-
-/* STATS BAR */
 .sbar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
 @media(max-width:700px){.sbar{grid-template-columns:repeat(2,1fr)}}
-.scard{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--rl);padding:15px 18px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm);transition:var(--tr)}
-.scard:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.scard{background:#fff;border:1px solid var(--gray-200);border-radius:var(--rl);padding:15px 18px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)}
 .sicon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
 .si-navy{background:linear-gradient(135deg,var(--navy),var(--blue))}
 .si-gold{background:linear-gradient(135deg,#b8861e,var(--gold-light))}
@@ -187,152 +142,115 @@ body{font-family:'Sarabun',sans-serif;font-size:15px;line-height:1.65;color:var(
 .si-orange{background:linear-gradient(135deg,#8b2500,var(--orange))}
 .sval{font-size:26px;font-weight:800;color:var(--navy);line-height:1}
 .slbl{font-size:11px;color:var(--gray-600);margin-top:2px}
-
-/* HISTORY TABLE */
 .htoolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
-.searchbox{display:flex;align-items:center;gap:8px;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--r);padding:8px 13px;flex:1;max-width:320px}
+.searchbox{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--gray-200);border-radius:var(--r);padding:8px 13px;flex:1;max-width:320px}
 .searchbox input{border:none;outline:none;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--gray-800);width:100%;background:transparent}
 .twrap{overflow-x:auto;border-radius:var(--rl);border:1px solid var(--gray-200);box-shadow:var(--shadow-sm)}
-table{width:100%;border-collapse:collapse;background:var(--white);font-size:14px}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:14px}
 thead tr{background:linear-gradient(90deg,var(--navy),var(--navy-mid))}
 thead th{padding:12px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--gold-light);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 tbody tr{border-bottom:1px solid var(--gray-100);transition:var(--tr)}
-tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--gray-50)}
-tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
+tbody td{padding:11px 14px;vertical-align:middle}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
 .b-blue{background:#dbeafe;color:#1e40af}.b-teal{background:#d1fae5;color:#065f46}
 .b-amber{background:#fef3c7;color:#92400e}.b-purple{background:#ede9fe;color:#5b21b6}
-.b-pink{background:#fce7f3;color:#9d174d}.b-gray{background:#f3f4f6;color:#374151}
-.b-orange{background:#ffedd5;color:#9a3412}
+.b-pink{background:#fce7f3;color:#9d174d}.b-gray{background:#f3f4f6;color:#374151}.b-orange{background:#ffedd5;color:#9a3412}
 .refcode-sm{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;background:var(--gold-pale);color:var(--navy);padding:2px 7px;border-radius:4px;border:1px solid var(--gold)}
-
-/* EMPTY */
 .empty{text-align:center;padding:60px 20px;color:var(--gray-400)}
 .empty-icon{font-size:52px;opacity:.28;margin-bottom:12px}
 .empty h3{font-size:17px;color:var(--gray-600);margin-bottom:5px}
 .empty p{font-size:13px}
-
-/* SETTINGS */
 .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
-.ssec-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.ssec-title::after{content:'';flex:1;height:1px;background:var(--gray-200)}
 .si-box{display:flex;align-items:center;gap:8px;padding:10px 13px;border-radius:var(--r);font-size:13px}
 .si-ok{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
 .si-err{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
 .si-info{background:#dbeafe;color:#1e3a8a;border:1px solid #bfdbfe}
 .si-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
-
-/* MODAL */
 .modal-ov{display:none;position:fixed;inset:0;background:rgba(13,33,55,.6);backdrop-filter:blur(4px);z-index:400;align-items:center;justify-content:center;padding:20px}
 .modal-ov.visible{display:flex}
-.modal{background:var(--white);border-radius:var(--rl);box-shadow:var(--shadow-xl);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;animation:min .25s ease}
-@keyframes min{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+.modal{background:#fff;border-radius:var(--rl);box-shadow:var(--shadow-xl);width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
 .modal-hdr{padding:17px 22px;background:linear-gradient(90deg,var(--navy),var(--navy-mid));display:flex;align-items:center;justify-content:space-between}
-.modal-hdr h3{font-size:15px;font-weight:700;color:var(--white)}
-.modal-close{background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;line-height:1}
-.modal-close:hover{color:var(--white)}
+.modal-hdr h3{font-size:15px;font-weight:700;color:#fff}
+.modal-close{background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer}
+.modal-close:hover{color:#fff}
 .modal-body{padding:22px}
 .batch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:14px}
 .bgi{border:1px solid var(--gray-200);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
 .bgi canvas{width:100%!important;height:auto!important}
 .bgi-lbl{padding:5px 7px;font-size:10px;text-align:center;border-top:1px solid var(--gray-200);background:var(--gray-50);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* TOAST */
 .tcon{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:9px;pointer-events:none}
 .toast{padding:13px 17px;border-radius:var(--r);font-size:14px;font-weight:500;max-width:340px;display:flex;align-items:flex-start;gap:9px;box-shadow:var(--shadow-xl);pointer-events:all;animation:tin .3s ease}
-.t-ok{background:var(--navy);color:var(--white);border-left:4px solid var(--gold)}
-.t-err{background:#7f1d1d;color:var(--white);border-left:4px solid #ef4444}
-.t-info{background:#1e3a8a;color:var(--white);border-left:4px solid #60a5fa}
+.t-ok{background:var(--navy);color:#fff;border-left:4px solid var(--gold)}
+.t-err{background:#7f1d1d;color:#fff;border-left:4px solid #ef4444}
+.t-info{background:#1e3a8a;color:#fff;border-left:4px solid #60a5fa}
 @keyframes tin{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
-
-/* LOADER */
 .ldr-ov{display:none;position:fixed;inset:0;background:rgba(13,33,55,.55);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:14px}
 .ldr-ov.on{display:flex}
 .ldr-spin{width:48px;height:48px;border:4px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
-.ldr-txt{color:var(--white);font-size:15px;font-weight:500}
+.ldr-txt{color:#fff;font-size:15px;font-weight:500}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* GAS URL banner */
-.gas-url-banner{
-  background:linear-gradient(90deg,#1a3a1a,#1e4d1e);
-  border:1px solid #2d7a2d;
-  border-radius:var(--r);
-  padding:12px 18px;
-  margin-bottom:20px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  font-size:13px;
-  color:rgba(255,255,255,.85);
-}
-.gas-url-banner .gas-dot{
-  width:10px;height:10px;border-radius:50%;
-  background:#4ade80;box-shadow:0 0 6px #4ade80;
-  flex-shrink:0;animation:pulse 2s infinite;
-}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.gas-url-banner.disconnected{background:linear-gradient(90deg,#3a1a1a,#4d1e1e);border-color:#7a2d2d}
-.gas-url-banner.disconnected .gas-dot{background:#f87171;box-shadow:0 0 6px #f87171}
-
-/* UPLOAD TO DRIVE VIEW */
-.udrop-zone{border:3px dashed var(--gray-200);border-radius:var(--rl);padding:48px 24px;text-align:center;cursor:pointer;transition:var(--tr);background:var(--white);position:relative;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.udrop-zone:hover,.udrop-zone.drag-over{border-color:var(--gold);background:#fdf8ed;box-shadow:0 0 0 4px rgba(201,162,39,.1)}
+/* Upload view */
+.udrop-zone{border:3px dashed var(--gray-200);border-radius:var(--rl);padding:48px 24px;text-align:center;cursor:pointer;transition:var(--tr);background:#fff;position:relative;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.udrop-zone:hover,.udrop-zone.drag-over,.udrop-zone.has-files{border-color:var(--gold);background:#fdf8ed}
 .udrop-zone.has-files{border-color:var(--green);background:#f0faf4}
 .udrop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .fqueue{display:flex;flex-direction:column;gap:8px;margin-top:16px}
-.fq-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--r);transition:var(--tr)}
-.fq-item.uploading{border-color:var(--gold);background:#fdf8ed}
+.fq-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;border:1.5px solid var(--gray-200);border-radius:var(--r)}
 .fq-item.done{border-color:var(--green);background:#f0faf4}
 .fq-item.error{border-color:var(--red);background:#fef2f2}
-.fq-icon{font-size:24px;flex-shrink:0;width:36px;text-align:center}
+.fq-icon{font-size:22px;flex-shrink:0}
 .fq-info{flex:1;min-width:0}
-.fq-name{font-size:13px;font-weight:600;color:var(--gray-800);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fq-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fq-meta{font-size:11px;color:var(--gray-400);margin-top:2px}
-.fq-status{flex-shrink:0;font-size:12px;font-weight:600;text-align:right}
-.fq-status.uploading{color:var(--gold)}.fq-status.done{color:var(--green)}.fq-status.error{color:var(--red)}
-.fq-remove{background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;transition:var(--tr);flex-shrink:0}
-.fq-remove:hover{background:var(--red);color:var(--white)}
-.qr-result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:16px}
-.qr-result-card{background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--rl);overflow:hidden;box-shadow:var(--shadow-sm);transition:var(--tr);display:flex;flex-direction:column}
-.qr-result-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-.up-overall-prog{background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--rl);padding:20px 22px;margin-top:16px;display:none}
-.up-overall-prog.visible{display:block}
-.up-overall-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.fq-status{flex-shrink:0;font-size:12px;font-weight:600}
+.fq-status.done{color:var(--green)}.fq-status.error{color:var(--red)}
+.fq-remove{background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px}
+.fq-remove:hover{background:var(--red);color:#fff}
+.qr-result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:16px}
+.qr-result-card{background:#fff;border:1.5px solid var(--gray-200);border-radius:var(--rl);overflow:hidden;box-shadow:var(--shadow-sm)}
+.up-prog{background:#fff;border:1.5px solid var(--gray-200);border-radius:var(--rl);padding:20px 22px;margin-top:16px;display:none}
+.up-prog.visible{display:block}
+
+/* GAS URL panel */
+.gas-panel{background:linear-gradient(135deg,#0a1628,#0d2137);border-radius:var(--rl);padding:20px 24px;margin-bottom:24px;border:1px solid rgba(201,162,39,.3)}
+.gas-panel-title{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.gas-url-row{display:flex;gap:10px;align-items:center}
+.gas-url-row input{flex:1;padding:10px 14px;border:1.5px solid rgba(255,255,255,.15);border-radius:var(--r);font-size:13px;font-family:'IBM Plex Mono',monospace;color:#fff;background:rgba(255,255,255,.08);outline:none}
+.gas-url-row input:focus{border-color:var(--gold)}
+.gas-url-row input::placeholder{color:rgba(255,255,255,.3)}
+.gas-status{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px}
+.gas-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.gas-dot.ok{background:#4ade80;box-shadow:0 0 6px #4ade80;animation:pulse 2s infinite}
+.gas-dot.err{background:#f87171}
+.gas-dot.idle{background:var(--gray-400)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:var(--gray-100)}
 ::-webkit-scrollbar-thumb{background:var(--gray-400);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--navy)}
-
-.footer{text-align:center;padding:18px;font-size:12px;color:var(--gray-400);margin-top:18px}
-.footer a{color:var(--blue-light);text-decoration:none}
-@media(max-width:600px){.tgrid{grid-template-columns:repeat(3,1fr)}.frow{grid-template-columns:1fr}.hdr-title span{display:none}}
+@media(max-width:600px){.tgrid{grid-template-columns:repeat(3,1fr)}.frow{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<!-- LOADER -->
 <div class="ldr-ov" id="ldr"><div class="ldr-spin"></div><div class="ldr-txt" id="ldr-txt">กำลังดำเนินการ...</div></div>
-
-<!-- TOAST -->
 <div class="tcon" id="tcon"></div>
 
-<!-- BATCH MODAL -->
 <div class="modal-ov" id="batch-modal">
   <div class="modal">
     <div class="modal-hdr"><h3>📦 ผลลัพธ์ QR Batch</h3><button class="modal-close" onclick="closeBatchModal()">✕</button></div>
     <div class="modal-body">
       <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
         <button class="btn btn-gold btn-sm" onclick="downloadAllBatch()">⬇ ดาวน์โหลดทั้งหมด</button>
-        <button class="btn btn-ol btn-sm" onclick="saveBatchToDrive()">☁ บันทึก Drive ทั้งหมด</button>
+        <button class="btn btn-ol btn-sm" onclick="saveBatchToDrive()">☁ บันทึก Drive</button>
       </div>
       <div class="batch-grid" id="batch-grid"></div>
     </div>
   </div>
 </div>
 
-<!-- HEADER -->
 <header class="hdr">
   <div class="hdr-brand">
     <div class="hdr-logo">⚙️</div>
@@ -350,13 +268,9 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
 
 <main class="app">
 
-<!-- ══ VIEW: CREATOR ══════════════════════════════════════ -->
+<!-- ══ CREATOR ══ -->
 <div class="view active" id="view-creator">
-  <div class="ph">
-    <div class="ph-icon">⊞</div>
-    <div><h1>สร้าง QR Code</h1><p>ข้อมูลฝังถาวรใน QR — ไม่มีวันหมดอายุ ไม่ต้องพึ่งเซิร์ฟเวอร์</p></div>
-  </div>
-
+  <div class="ph"><div class="ph-icon">⊞</div><div><h1>สร้าง QR Code</h1><p>ข้อมูลฝังถาวรใน QR — ไม่มีวันหมดอายุ</p></div></div>
   <div class="cgrid">
     <div style="display:flex;flex-direction:column;gap:20px">
       <div class="card">
@@ -377,21 +291,21 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
             </div>
             <div class="dform active" id="form-url"><div class="field"><label>URL <span class="req">*</span></label><input type="url" id="url-input" placeholder="https://example.go.th" oninput="livePreview()"></div></div>
             <div class="dform" id="form-wifi">
-              <div class="field"><label>ชื่อเครือข่าย (SSID) <span class="req">*</span></label><input type="text" id="wifi-ssid" placeholder="MyNetwork" oninput="livePreview()"></div>
+              <div class="field"><label>ชื่อเครือข่าย (SSID)<span class="req">*</span></label><input type="text" id="wifi-ssid" placeholder="MyNetwork" oninput="livePreview()"></div>
               <div class="frow">
                 <div class="field"><label>รหัสผ่าน</label><input type="text" id="wifi-pass" placeholder="Password" oninput="livePreview()"></div>
                 <div class="field"><label>ความปลอดภัย</label><select id="wifi-sec" onchange="livePreview()"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">ไม่มีรหัสผ่าน</option></select></div>
               </div>
             </div>
-            <div class="dform" id="form-phone"><div class="field"><label>หมายเลขโทรศัพท์ <span class="req">*</span></label><input type="tel" id="phone-input" placeholder="0812345678" oninput="livePreview()"></div></div>
+            <div class="dform" id="form-phone"><div class="field"><label>หมายเลขโทรศัพท์<span class="req">*</span></label><input type="tel" id="phone-input" placeholder="0812345678" oninput="livePreview()"></div></div>
             <div class="dform" id="form-email">
-              <div class="field"><label>อีเมล <span class="req">*</span></label><input type="email" id="email-to" placeholder="contact@example.go.th" oninput="livePreview()"></div>
+              <div class="field"><label>อีเมล<span class="req">*</span></label><input type="email" id="email-to" placeholder="contact@example.go.th" oninput="livePreview()"></div>
               <div class="field"><label>หัวข้อ</label><input type="text" id="email-subject" placeholder="หัวข้ออีเมล" oninput="livePreview()"></div>
               <div class="field"><label>ข้อความ</label><textarea id="email-body" placeholder="เนื้อหา..." oninput="livePreview()"></textarea></div>
             </div>
             <div class="dform" id="form-vcard">
               <div class="frow">
-                <div class="field"><label>ชื่อ-นามสกุล <span class="req">*</span></label><input type="text" id="vc-name" placeholder="นายสมชาย ใจดี" oninput="livePreview()"></div>
+                <div class="field"><label>ชื่อ-นามสกุล<span class="req">*</span></label><input type="text" id="vc-name" placeholder="นายสมชาย ใจดี" oninput="livePreview()"></div>
                 <div class="field"><label>หน่วยงาน</label><input type="text" id="vc-org" placeholder="กรม..." oninput="livePreview()"></div>
               </div>
               <div class="frow">
@@ -400,15 +314,15 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
               </div>
               <div class="field"><label>เว็บไซต์</label><input type="url" id="vc-url" placeholder="https://example.go.th" oninput="livePreview()"></div>
             </div>
-            <div class="dform" id="form-text"><div class="field"><label>ข้อความ <span class="req">*</span></label><textarea id="text-input" placeholder="พิมพ์ข้อความที่ต้องการ..." oninput="livePreview()"></textarea></div></div>
+            <div class="dform" id="form-text"><div class="field"><label>ข้อความ<span class="req">*</span></label><textarea id="text-input" placeholder="พิมพ์ข้อความ..." oninput="livePreview()"></textarea></div></div>
           </div>
           <div id="panel-file" style="display:none">
             <div class="upzone" id="upzone" ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="dDrop(event)">
               <input type="file" id="file-input" accept="*/*" onchange="handleFile(event)">
               <div class="up-icon">📂</div>
               <div class="up-title">ลาก & วางไฟล์ หรือคลิกเลือก</div>
-              <div class="up-sub">รองรับทุกประเภทไฟล์ — ระบบอ่านเนื้อหาอัตโนมัติ</div>
-              <div class="up-chips"><span class="chip chip-d">.docx</span><span class="chip chip-s">.xlsx .csv</span><span class="chip chip-p">.pdf</span><span class="chip chip-i">.jpg .png</span><span class="chip chip-t">.txt .json</span><span class="chip chip-o">+ ทุกไฟล์</span></div>
+              <div class="up-sub">รองรับทุกประเภทไฟล์</div>
+              <div class="up-chips"><span class="chip chip-d">.docx</span><span class="chip chip-s">.xlsx .csv</span><span class="chip chip-p">.pdf</span><span class="chip chip-t">.txt .json</span><span class="chip chip-o">+ ทุกไฟล์</span></div>
             </div>
             <div class="fprev" id="fprev">
               <div class="fprev-hdr"><div class="fprev-name" id="fp-name">—</div><div class="fprev-meta" id="fp-meta">—</div></div>
@@ -418,7 +332,7 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
                 <button class="btn btn-ol btn-sm" onclick="useFile('full')">📄 เนื้อหา</button>
                 <button class="btn btn-ol btn-sm" onclick="useFile('url')">🔗 URL ที่พบ</button>
                 <button class="btn btn-ol btn-sm" onclick="useFile('name')">📌 ชื่อไฟล์</button>
-                <button class="btn btn-sm" style="background:var(--navy);color:var(--white)" onclick="toFileBatch()">📦 Batch</button>
+                <button class="btn btn-sm" style="background:var(--navy);color:#fff" onclick="toFileBatch()">📦 Batch</button>
               </div>
             </div>
           </div>
@@ -426,7 +340,7 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
       </div>
 
       <div class="card">
-        <div class="card-hdr"><div class="card-step">2</div><h2>โลโก้หน่วยงาน (ตรงกลาง QR)</h2></div>
+        <div class="card-hdr"><div class="card-step">2</div><h2>โลโก้หน่วยงาน</h2></div>
         <div class="card-body">
           <div class="logo-section">
             <div class="logo-hdr">
@@ -440,16 +354,16 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
                 <div class="logo-thumb" id="logo-thumb">🏛️</div>
                 <div class="logo-drop-zone" ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="logoDropped(event)">
                   <input type="file" id="logo-input" accept="image/*" onchange="handleLogoFile(event)">
-                  <div class="logo-drop-label">คลิกหรือลากรูปโลโก้มาวาง<br><small style="color:var(--gray-400)">PNG, JPG, SVG, WebP</small></div>
+                  <div class="logo-drop-label">คลิกหรือลากรูปโลโก้<br><small style="color:var(--gray-400)">PNG, JPG, SVG, WebP</small></div>
                 </div>
               </div>
               <div class="logo-controls">
-                <span class="logo-size-label">ขนาดโลโก้:</span>
-                <input type="range" id="logo-size" class="logo-size-input" min="20" max="120" value="60" oninput="updateLogoSize(this.value)" style="flex:1;accent-color:var(--navy)">
+                <span style="font-size:13px;font-weight:600;color:var(--gray-800);white-space:nowrap">ขนาด:</span>
+                <input type="range" id="logo-size" min="20" max="120" value="60" oninput="updateLogoSize(this.value)" style="flex:1;accent-color:var(--navy)">
                 <span id="logo-size-val" style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--navy);min-width:45px">60 px</span>
                 <button class="btn btn-sm btn-ol" onclick="clearLogo()" id="btn-clear-logo" style="display:none">🗑 ลบ</button>
               </div>
-              <div class="logo-note">⚡ แนะนำ Error Correction ระดับ Q หรือ H เมื่อมีโลโก้</div>
+              <div class="logo-note">⚡ แนะนำ Error Correction Q หรือ H เมื่อมีโลโก้</div>
             </div>
           </div>
         </div>
@@ -500,22 +414,19 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
         <span class="prev-type" id="prev-type-lbl">—</span>
       </div>
       <div class="astack">
-        <button class="btn btn-primary btn-full" onclick="generateAndSave()">⚙ สร้างและบันทึกลง Sheets</button>
+        <button class="btn btn-primary btn-full" onclick="doGenerateAndSave()">⚙ สร้างและบันทึกลง Sheets</button>
         <button class="btn btn-gold btn-full" onclick="downloadQR('png')" id="btn-dl-png" disabled>⬇ ดาวน์โหลด PNG</button>
         <button class="btn btn-ol btn-full" onclick="downloadQR('svg')" id="btn-dl-svg" disabled>⬇ ดาวน์โหลด SVG</button>
         <button class="btn btn-ol btn-full" onclick="copyQR()" id="btn-copy" disabled>📋 คัดลอกรูปภาพ</button>
-        <button class="btn btn-ol btn-full" onclick="saveToDrive()" id="btn-drive" disabled>☁ บันทึกขึ้น Google Drive</button>
+        <button class="btn btn-ol btn-full" onclick="saveToDrive()" id="btn-drive" disabled>☁ บันทึกขึ้น Drive</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ VIEW: UPLOAD FILE → DRIVE → QR ═══════════════════ -->
+<!-- ══ UPLOAD ══ -->
 <div class="view" id="view-upload">
-  <div class="ph">
-    <div class="ph-icon">☁</div>
-    <div><h1>อัปโหลดไฟล์ → Drive → QR Code</h1><p>อัปโหลดไฟล์ขึ้น Google Drive → ได้ลิงก์ → สร้าง QR</p></div>
-  </div>
+  <div class="ph"><div class="ph-icon">☁</div><div><h1>อัปโหลดไฟล์ → Drive → QR</h1><p>อัปโหลดไฟล์ขึ้น Drive แล้วได้ QR ทันที</p></div></div>
   <div class="cgrid">
     <div style="display:flex;flex-direction:column;gap:20px">
       <div class="card">
@@ -523,18 +434,14 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
         <div class="card-body">
           <div id="udrop" class="udrop-zone" ondragover="uDragOver(event)" ondragleave="uDragLeave(event)" ondrop="uDrop(event)">
             <input type="file" id="u-file-input" multiple accept="*/*" onchange="uFilePicked(event)">
-            <div style="font-size:48px;margin-bottom:12px">☁</div>
-            <div style="font-size:17px;font-weight:700;color:var(--navy);margin-bottom:6px">ลากไฟล์มาวาง หรือคลิกเลือก</div>
-            <div style="font-size:13px;color:var(--gray-600)">รองรับทุกประเภทไฟล์ · เลือกได้หลายไฟล์</div>
-            <div style="font-size:11px;color:var(--gray-400);margin-top:8px">ขนาดต่อไฟล์ไม่เกิน 25 MB</div>
+            <div style="font-size:44px;margin-bottom:12px">☁</div>
+            <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px">ลากไฟล์มาวาง หรือคลิกเลือก</div>
+            <div style="font-size:13px;color:var(--gray-600)">รองรับทุกประเภทไฟล์ · หลายไฟล์พร้อมกัน</div>
           </div>
           <div id="u-queue" class="fqueue" style="display:none"></div>
-          <div class="up-overall-prog" id="u-overall-prog">
-            <div class="up-overall-title"><span id="u-prog-icon">⏳</span><span id="u-prog-title">กำลังอัปโหลด...</span></div>
-            <div class="prog-wrap">
-              <div class="prog-lbl"><span id="u-prog-lbl">0 / 0</span><span id="u-prog-pct">0%</span></div>
-              <div class="prog-bg"><div class="prog-fill" id="u-prog-bar"></div></div>
-            </div>
+          <div class="up-prog" id="u-prog">
+            <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:8px"><span id="u-prog-icon">⏳</span><span id="u-prog-title">กำลังอัปโหลด...</span></div>
+            <div class="prog-wrap"><div class="prog-lbl"><span id="u-prog-lbl"></span><span id="u-prog-pct">0%</span></div><div class="prog-bg"><div class="prog-fill" id="u-prog-bar"></div></div></div>
           </div>
         </div>
       </div>
@@ -553,43 +460,38 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
           </div>
           <div class="frow">
             <div class="field"><label>ขนาด</label><select id="u-size"><option value="200">200×200</option><option value="300" selected>300×300</option><option value="400">400×400</option></select></div>
-            <div class="field"><label>QR เปิดดู / โหลด</label><select id="u-link-type"><option value="view">เปิดดูออนไลน์</option><option value="download">ดาวน์โหลดตรง</option></select></div>
+            <div class="field"><label>ลิงก์ใน QR</label><select id="u-link-type"><option value="view">ดูออนไลน์</option><option value="download">ดาวน์โหลดตรง</option></select></div>
           </div>
           <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:8px">
-            <input type="checkbox" id="u-use-logo" style="accent-color:var(--navy);width:15px;height:15px"> ใช้โลโก้หน่วยงานบน QR
+            <input type="checkbox" id="u-use-logo" style="accent-color:var(--navy);width:15px;height:15px"> ใช้โลโก้บน QR
           </label>
         </div>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:20px">
-      <div class="card" style="position:sticky;top:90px">
-        <div class="card-hdr"><div class="card-step">3</div><h2>อัปโหลดและสร้าง QR</h2></div>
-        <div class="card-body" style="text-align:center;padding:28px 22px">
-          <div id="u-action-idle"><div style="font-size:48px;margin-bottom:12px;opacity:.3">☁</div><div style="font-size:13px;color:var(--gray-600)">เลือกไฟล์ก่อน</div></div>
-          <div id="u-action-ready" style="display:none">
-            <div style="font-size:42px;margin-bottom:8px">📂</div>
-            <div style="font-size:15px;font-weight:700;color:var(--navy)" id="u-ready-count">0 ไฟล์</div>
-            <div style="font-size:12px;color:var(--gray-600)" id="u-ready-size"></div>
-          </div>
+    <div class="card" style="position:sticky;top:90px">
+      <div class="card-hdr"><div class="card-step">3</div><h2>อัปโหลดและสร้าง QR</h2></div>
+      <div class="card-body" style="text-align:center;padding:28px 22px">
+        <div id="u-idle"><div style="font-size:44px;opacity:.3;margin-bottom:10px">☁</div><div style="font-size:13px;color:var(--gray-600)">เลือกไฟล์ก่อน</div></div>
+        <div id="u-ready" style="display:none">
+          <div style="font-size:38px;margin-bottom:8px">📂</div>
+          <div style="font-size:15px;font-weight:700;color:var(--navy)" id="u-ready-count">0 ไฟล์</div>
+          <div style="font-size:12px;color:var(--gray-600)" id="u-ready-size"></div>
         </div>
-        <div class="astack">
-          <button class="btn btn-primary btn-full" onclick="startUpload()" id="btn-start-upload" disabled>☁ อัปโหลดและสร้าง QR</button>
-          <button class="btn btn-gold btn-full" onclick="dlAllUploadQR()" id="btn-dl-upload-all" disabled>⬇ ดาวน์โหลด QR ทั้งหมด</button>
-          <button class="btn btn-ol btn-full" onclick="clearUploadQueue()">🗑 ล้างรายการ</button>
-        </div>
+      </div>
+      <div class="astack">
+        <button class="btn btn-primary btn-full" onclick="startUpload()" id="btn-start-upload" disabled>☁ อัปโหลดและสร้าง QR</button>
+        <button class="btn btn-gold btn-full" onclick="dlAllUploadQR()" id="btn-dl-upload-all" disabled>⬇ ดาวน์โหลด QR ทั้งหมด</button>
+        <button class="btn btn-ol btn-full" onclick="clearUploadQueue()">🗑 ล้างรายการ</button>
       </div>
     </div>
   </div>
   <div id="u-results-section" style="display:none;margin-top:28px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <h2 style="font-size:18px;font-weight:700;color:var(--navy)">🎉 QR Code ที่สร้างแล้ว</h2>
-      <span style="font-size:13px;color:var(--gray-600)" id="u-results-count"></span>
-    </div>
+    <h2 style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:16px">🎉 QR Code ที่สร้างแล้ว <span id="u-results-count" style="font-size:13px;font-weight:400;color:var(--gray-600)"></span></h2>
     <div class="qr-result-grid" id="u-results-grid"></div>
   </div>
 </div>
 
-<!-- ══ VIEW: BATCH ════════════════════════════════════════ -->
+<!-- ══ BATCH ══ -->
 <div class="view" id="view-batch">
   <div class="ph"><div class="ph-icon">📦</div><div><h1>สร้าง QR Batch</h1><p>อัปโหลดไฟล์หลายแถว — สร้าง QR ทีเดียว</p></div></div>
   <div class="cgrid">
@@ -625,33 +527,29 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
             <div class="field"><label>ขนาด</label><select id="bc-size"><option value="200">200×200</option><option value="300" selected>300×300</option><option value="400">400×400</option></select></div>
             <div class="field"><label>Error Correction</label><select id="bc-ecl"><option value="M" selected>M</option><option value="Q">Q</option><option value="H">H</option></select></div>
           </div>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:8px">
-            <input type="checkbox" id="bc-logo" style="accent-color:var(--navy);width:15px;height:15px"> ใช้โลโก้หน่วยงาน
-          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:8px"><input type="checkbox" id="bc-logo" style="accent-color:var(--navy);width:15px;height:15px"> ใช้โลโก้</label>
         </div>
       </div>
     </div>
     <div class="card" style="position:sticky;top:90px">
       <div class="card-hdr"><div class="card-step">3</div><h2>สร้างและดาวน์โหลด</h2></div>
       <div class="card-body">
-        <div id="batch-prog-wrap" style="display:none">
-          <div class="prog-wrap"><div class="prog-lbl"><span id="b-prog-lbl">กำลังสร้าง...</span><span id="b-prog-pct">0%</span></div><div class="prog-bg"><div class="prog-fill" id="b-prog-bar"></div></div></div>
-        </div>
+        <div id="batch-prog-wrap" style="display:none"><div class="prog-wrap"><div class="prog-lbl"><span id="b-prog-lbl">กำลังสร้าง...</span><span id="b-prog-pct">0%</span></div><div class="prog-bg"><div class="prog-fill" id="b-prog-bar"></div></div></div></div>
         <div id="batch-empty-msg" style="text-align:center;padding:28px;color:var(--gray-400);font-size:13px">อัปโหลดไฟล์เพื่อเริ่มต้น</div>
       </div>
       <div class="astack">
         <button class="btn btn-primary btn-full" onclick="runBatch()" id="btn-run-batch" disabled>⚙ สร้าง QR + บันทึก Sheets</button>
         <button class="btn btn-gold btn-full" onclick="downloadAllBatch()" id="btn-dl-all" disabled>⬇ ดาวน์โหลดทั้งหมด</button>
         <button class="btn btn-ol btn-full" onclick="previewBatchModal()" id="btn-prev-batch" disabled>👁 ดูตัวอย่าง Grid</button>
-        <button class="btn btn-ol btn-full" onclick="saveBatchToDrive()" id="btn-batch-drive" disabled>☁ บันทึก Drive ทั้งหมด</button>
+        <button class="btn btn-ol btn-full" onclick="saveBatchToDrive()" id="btn-batch-drive" disabled>☁ บันทึก Drive</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ VIEW: HISTORY ══════════════════════════════════════ -->
+<!-- ══ HISTORY ══ -->
 <div class="view" id="view-history">
-  <div class="ph"><div class="ph-icon">≡</div><div><h1>ประวัติการสร้าง QR Code</h1><p>เก็บใน Google Sheets</p></div></div>
+  <div class="ph"><div class="ph-icon">≡</div><div><h1>ประวัติ QR Code</h1><p>เก็บใน Google Sheets</p></div></div>
   <div class="sbar">
     <div class="scard"><div class="sicon si-navy">⊞</div><div><div class="sval" id="st-total">—</div><div class="slbl">QR ทั้งหมด</div></div></div>
     <div class="scard"><div class="sicon si-gold">📁</div><div><div class="sval" id="st-file">—</div><div class="slbl">จากไฟล์</div></div></div>
@@ -667,43 +565,36 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
   </div>
   <div class="twrap">
     <table>
-      <thead><tr><th>รหัสอ้างอิง</th><th>ประเภท</th><th>แหล่งที่มา</th><th>ข้อมูล QR</th><th>สี</th><th>โลโก้</th><th>วันที่สร้าง</th><th>Drive</th><th>ลบ</th></tr></thead>
+      <thead><tr><th>รหัสอ้างอิง</th><th>ประเภท</th><th>แหล่งที่มา</th><th>ข้อมูล QR</th><th>สี</th><th>โลโก้</th><th>วันที่</th><th>Drive</th><th>ลบ</th></tr></thead>
       <tbody id="hist-tbody"></tbody>
     </table>
   </div>
   <div id="hist-pager" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;font-size:13px"></div>
 </div>
 
-<!-- ══ VIEW: SETTINGS ═════════════════════════════════════ -->
+<!-- ══ SETTINGS ══ -->
 <div class="view" id="view-settings">
-  <div class="ph"><div class="ph-icon">⚙</div><div><h1>ตั้งค่าแอปพลิเคชัน</h1><p>จัดการ GAS URL, Google Drive, โลโก้ และธีม</p></div></div>
-  <div class="sgrid">
+  <div class="ph"><div class="ph-icon">⚙</div><div><h1>ตั้งค่า</h1><p>เชื่อมต่อ Google Apps Script, Drive และโลโก้</p></div></div>
 
-    <!-- GAS URL Setting (ใหม่!) -->
-    <div class="card" style="grid-column:1/-1">
-      <div class="card-hdr"><div class="card-step">🔗</div><h2>Google Apps Script URL (สำคัญ — ตั้งค่าก่อนใช้งาน)</h2></div>
-      <div class="card-body">
-        <div id="gas-connect-status" class="gas-url-banner disconnected">
-          <div class="gas-dot"></div>
-          <span id="gas-status-txt">ยังไม่ได้ตั้งค่า GAS URL</span>
-        </div>
-        <div class="field" style="margin-top:14px">
-          <label>Web App URL จาก Google Apps Script <span class="req">*</span></label>
-          <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/AKfycbx.../exec"
-            oninput="onGasUrlInput()">
-        </div>
-        <div style="font-size:12px;color:var(--gray-600);margin-bottom:14px;line-height:1.7">
-          📌 วิธีรับ URL: GAS Editor → <strong>Deploy</strong> → <strong>Manage Deployments</strong> → คัดลอก Web App URL<br>
-          ⚠️ ต้องตั้ง Execute as: <strong>Me</strong> และ Who has access: <strong>Anyone</strong>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-primary btn-sm" onclick="saveGasUrl()">💾 บันทึก URL</button>
-          <button class="btn btn-ol btn-sm" onclick="testGasUrl()">🔌 ทดสอบการเชื่อมต่อ</button>
-        </div>
-        <div id="gas-test-result" style="margin-top:12px"></div>
-      </div>
+  <!-- GAS URL Panel -->
+  <div class="gas-panel">
+    <div class="gas-panel-title">🔗 Google Apps Script URL</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px;line-height:1.7">
+      วิธีรับ URL: GAS Editor → <strong style="color:var(--gold)">Deploy → Manage Deployments</strong> → คัดลอก Web App URL<br>
+      ตั้งค่า: Execute as = <strong style="color:var(--gold)">Me</strong> · Who has access = <strong style="color:var(--gold)">Anyone</strong>
     </div>
+    <div class="gas-url-row">
+      <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/AKfycbx.../exec" oninput="onGasUrlInput()">
+      <button class="btn btn-gold btn-sm" onclick="saveGasUrl()">💾 บันทึก</button>
+      <button class="btn btn-ol btn-sm" style="color:#fff;border-color:rgba(255,255,255,.2)" onclick="testGasUrl()">🔌 ทดสอบ</button>
+    </div>
+    <div class="gas-status">
+      <div class="gas-dot idle" id="gas-dot"></div>
+      <span style="color:rgba(255,255,255,.7)" id="gas-status-txt">ยังไม่ได้ตั้งค่า</span>
+    </div>
+  </div>
 
+  <div class="sgrid">
     <div class="card">
       <div class="card-hdr"><div class="card-step">☁</div><h2>Google Drive</h2></div>
       <div class="card-body">
@@ -713,16 +604,12 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
         <div id="drive-status" class="si-box si-info" style="margin-top:12px"><div class="si-dot"></div>ยังไม่ทดสอบ</div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-hdr"><div class="card-step">🏛️</div><h2>โลโก้หน่วยงาน</h2></div>
       <div class="card-body">
         <div class="logo-preview-wrap" style="margin-bottom:14px">
           <div class="logo-thumb" id="settings-logo-thumb">🏛️</div>
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:6px" id="settings-logo-name">ยังไม่มีโลโก้</div>
-            <div style="font-size:12px;color:var(--gray-600)">โลโก้ใช้กับ QR ทุกอัน</div>
-          </div>
+          <div><div style="font-size:13px;font-weight:600;margin-bottom:4px" id="settings-logo-name">ยังไม่มีโลโก้</div><div style="font-size:12px;color:var(--gray-600)">ใช้กับ QR ทุกอันเมื่อเปิดโลโก้</div></div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-primary btn-sm" onclick="saveLogoToSheets()">💾 บันทึกลง Sheets</button>
@@ -731,7 +618,6 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
         <div id="logo-save-status" style="margin-top:12px"></div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-hdr"><div class="card-step">🎨</div><h2>ธีมองค์กร</h2></div>
       <div class="card-body">
@@ -740,71 +626,58 @@ tbody td{padding:11px 14px;color:var(--gray-800);vertical-align:middle}
           <div class="field"><label>สีหลัก</label><input type="color" id="theme-primary" value="#0d2137"></div>
           <div class="field"><label>สีรอง</label><input type="color" id="theme-accent" value="#c9a227"></div>
         </div>
+        <button class="btn btn-primary btn-full" onclick="saveSettings()" style="margin-top:14px">💾 บันทึกทั้งหมด</button>
       </div>
     </div>
-
-    <div class="card">
-      <div class="card-hdr"><div class="card-step">💾</div><h2>บันทึกการตั้งค่า</h2></div>
-      <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-        <button class="btn btn-primary btn-full" onclick="saveSettings()">💾 บันทึกทั้งหมด</button>
-        <div style="font-size:11px;color:var(--gray-400);text-align:center">v4.0 · GAS_URL Mode · No localStorage</div>
-      </div>
-    </div>
-
   </div>
 </div>
 
 </main>
-<div class="footer">QR ProMaker v4.0 · ข้อมูลฝังตรงใน QR — ไม่มีวันหมดอายุ</div>
+<div style="text-align:center;padding:18px;font-size:12px;color:var(--gray-400)">QR ProMaker v4.0 · GitHub Pages + GAS · ข้อมูลฝังตรงใน QR</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
-// QR ProMaker v4 — Frontend
-// ใช้ GAS_URL (fetch) แทน google.script.run
+// QR ProMaker v4 — GitHub Pages Edition
+// ใช้ GET ?fn=xxx&params=JSON แทน fetch POST → ไม่มี CORS
 // ═══════════════════════════════════════════════════════════
 
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 
-// ─── GAS URL CONFIG ──────────────────────────────────────
-// ★ ใส่ URL ของ GAS Web App ที่นี่ หรือตั้งค่าในหน้า Settings
-let GAS_URL = localStorage.getItem('gas_url') || '';
+// ─── GAS URL (เก็บใน localStorage) ─────────────────────────
+let GAS_URL = localStorage.getItem('qr_gas_url') || '';
 
-// เรียก GAS ผ่าน fetch (POST JSON)
+// ★ วิธีเรียก GAS: GET ?fn=xxx&params=encodeURIComponent(JSON)
+// GET ไม่มี CORS preflight → ทำงานได้กับ GAS เสมอ
 async function gasCall(fn, params) {
   if (!GAS_URL) {
-    // Demo mode ถ้ายังไม่ตั้งค่า URL
-    console.warn('GAS_URL ยังไม่ได้ตั้งค่า — ทำงานในโหมดตัวอย่าง');
     return { demo: true, records: [], total: 0 };
   }
   try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fn, params })
-    });
+    const paramsStr = encodeURIComponent(JSON.stringify(params || {}));
+    const url = `${GAS_URL}?fn=${encodeURIComponent(fn)}&params=${paramsStr}`;
+    const res = await fetch(url, { method: 'GET' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (e) {
-    console.error('gasCall error:', e);
+    console.error('gasCall error:', fn, e);
     return { error: e.message };
   }
 }
 
-// ─── GAS URL SETTINGS UI ─────────────────────────────────
+// ─── GAS URL UI ──────────────────────────────────────────
 function onGasUrlInput() {
   const val = document.getElementById('gas-url-input').value.trim();
-  const banner = document.getElementById('gas-connect-status');
-  const txt    = document.getElementById('gas-status-txt');
-  if (val.startsWith('https://script.google.com/macros/s/')) {
-    banner.classList.remove('disconnected');
-    txt.textContent = 'URL ถูกต้อง — กด "บันทึก URL" เพื่อเริ่มใช้งาน';
+  const dot = document.getElementById('gas-dot');
+  const txt = document.getElementById('gas-status-txt');
+  if (val.includes('script.google.com')) {
+    dot.className = 'gas-dot ok';
+    txt.textContent = 'URL ดูถูกต้อง — กด "บันทึก" หรือ "ทดสอบ"';
   } else if (val) {
-    banner.classList.add('disconnected');
-    txt.textContent = 'URL ไม่ถูกต้อง';
+    dot.className = 'gas-dot err';
+    txt.textContent = 'URL ไม่ใช่ GAS URL';
   } else {
-    banner.classList.add('disconnected');
-    txt.textContent = 'ยังไม่ได้ตั้งค่า GAS URL';
+    dot.className = 'gas-dot idle';
+    txt.textContent = 'ยังไม่ได้ตั้งค่า';
   }
 }
 
@@ -812,686 +685,313 @@ function saveGasUrl() {
   const val = document.getElementById('gas-url-input').value.trim();
   if (!val) { toast('กรุณาใส่ URL ก่อน', 'error'); return; }
   GAS_URL = val;
-  localStorage.setItem('gas_url', val);
+  localStorage.setItem('qr_gas_url', val);
+  document.getElementById('gas-dot').className = 'gas-dot ok';
+  document.getElementById('gas-status-txt').textContent = 'บันทึกแล้ว ✓';
   toast('บันทึก GAS URL สำเร็จ', 'success');
-  updateGasStatusBanner();
 }
 
 async function testGasUrl() {
   const val = document.getElementById('gas-url-input').value.trim() || GAS_URL;
   if (!val) { toast('กรุณาใส่ URL ก่อน', 'error'); return; }
-  showLoader('กำลังทดสอบการเชื่อมต่อ...');
+  showLoader('กำลังทดสอบ...');
+  const old = GAS_URL; GAS_URL = val;
   try {
-    const oldUrl = GAS_URL;
-    GAS_URL = val;
     const r = await gasCall('getConfig', {});
-    GAS_URL = oldUrl;
     if (r.error) throw new Error(r.error);
-    document.getElementById('gas-test-result').innerHTML =
-      `<div class="si-box si-ok"><div class="si-dot"></div>เชื่อมต่อสำเร็จ ✓ GAS v${r._version||'?'} · Sheets พร้อมใช้งาน</div>`;
-    toast('เชื่อมต่อ GAS สำเร็จ', 'success');
-    // Auto save if success
+    if (r.demo)  throw new Error('GAS URL ว่าง');
     GAS_URL = val;
-    localStorage.setItem('gas_url', val);
-    updateGasStatusBanner();
+    localStorage.setItem('qr_gas_url', val);
+    document.getElementById('gas-dot').className = 'gas-dot ok';
+    document.getElementById('gas-status-txt').textContent = `เชื่อมต่อสำเร็จ ✓ · v${r._version||'?'}`;
+    toast('✓ เชื่อมต่อ GAS สำเร็จ — Sheets พร้อมใช้งาน', 'success');
+    // โหลด config มาด้วยเลย
+    if (r.drive_folder_id) document.getElementById('drive-folder-id').value = r.drive_folder_id;
+    if (r.org_name)        document.getElementById('org-name').value = r.org_name;
   } catch(e) {
-    document.getElementById('gas-test-result').innerHTML =
-      `<div class="si-box si-err"><div class="si-dot"></div>เชื่อมต่อไม่ได้: ${esc(e.message)}</div>`;
-    toast('เชื่อมต่อไม่ได้', 'error');
+    GAS_URL = old;
+    document.getElementById('gas-dot').className = 'gas-dot err';
+    document.getElementById('gas-status-txt').textContent = 'เชื่อมต่อไม่ได้: ' + e.message;
+    toast('เชื่อมต่อไม่ได้: ' + e.message, 'error');
   } finally { hideLoader(); }
 }
 
-function updateGasStatusBanner() {
-  const banner = document.getElementById('gas-connect-status');
-  const txt    = document.getElementById('gas-status-txt');
-  if (GAS_URL) {
-    banner.classList.remove('disconnected');
-    txt.textContent = 'เชื่อมต่อแล้ว: ' + GAS_URL.substring(0, 60) + '...';
-  } else {
-    banner.classList.add('disconnected');
-    txt.textContent = 'ยังไม่ได้ตั้งค่า GAS URL — ไปที่ ⚙ ตั้งค่า เพื่อใส่ URL';
-  }
-}
+// ─── STATE ────────────────────────────────────────────────
+let currentType='url', currentMode='manual', currentRefId=null, lastQRData=null;
+let currentFile=null, batchItems=[], batchCanvases=[];
+let logoBase64='', logoEnabled=false, logoSize=60;
+let histPage=0, histSearch='';
+const HIST_LIMIT=50;
+const TYPE_LABELS={url:'ลิงก์',wifi:'WiFi',phone:'เบอร์โทร',email:'อีเมล',vcard:'นามบัตร',text:'ข้อความ',file:'จากไฟล์',batch:'Batch'};
+const TYPE_BADGES={url:'b-blue',wifi:'b-teal',phone:'b-amber',email:'b-pink',vcard:'b-purple',text:'b-gray',file:'b-orange',batch:'b-orange'};
 
-// ─── STATE ───────────────────────────────────────────────
-let currentType   = 'url';
-let currentMode   = 'manual';
-let currentRefId  = null;
-let lastQRData    = null;
-let currentFile   = null;
-let batchItems    = [];
-let batchCanvases = [];
-let logoBase64    = '';
-let logoEnabled   = false;
-let logoSize      = 60;
-
-let histPage    = 0;
-const HIST_LIMIT = 50;
-let histSearch  = '';
-
-const TYPE_LABELS = { url:'ลิงก์', wifi:'WiFi', phone:'เบอร์โทร', email:'อีเมล', vcard:'นามบัตร', text:'ข้อความ', file:'จากไฟล์', batch:'Batch' };
-const TYPE_BADGES = { url:'b-blue', wifi:'b-teal', phone:'b-amber', email:'b-pink', vcard:'b-purple', text:'b-gray', file:'b-orange', batch:'b-orange' };
-
-// ─── VIEW ───────────────────────────────────────────────
+// ─── VIEW ─────────────────────────────────────────────────
 function showView(v) {
-  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('view-' + v).classList.add('active');
-  document.getElementById('nav-' + v).classList.add('active');
-  if (v === 'history')  loadHistory();
-  if (v === 'settings') loadSettings();
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('nav-'+v).classList.add('active');
+  if(v==='history')  loadHistory();
+  if(v==='settings') loadSettings();
 }
 
-// ─── MODE / TYPE ─────────────────────────────────────────
+// ─── TYPE/MODE ────────────────────────────────────────────
 function setMode(m) {
-  currentMode = m;
-  document.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
-  document.getElementById('mode-' + m).classList.add('active');
-  document.getElementById('panel-manual').style.display = m === 'manual' ? 'block' : 'none';
-  document.getElementById('panel-file').style.display   = m === 'file'   ? 'block' : 'none';
-  if (m === 'manual') livePreview();
+  currentMode=m;
+  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('mode-'+m).classList.add('active');
+  document.getElementById('panel-manual').style.display=m==='manual'?'block':'none';
+  document.getElementById('panel-file').style.display=m==='file'?'block':'none';
+  if(m==='manual') livePreview();
 }
-
 function setType(t) {
-  currentType = t;
-  document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.dform').forEach(f => f.classList.remove('active'));
-  document.getElementById('type-' + t).classList.add('active');
-  document.getElementById('form-' + t).classList.add('active');
+  currentType=t;
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.dform').forEach(f=>f.classList.remove('active'));
+  document.getElementById('type-'+t).classList.add('active');
+  document.getElementById('form-'+t).classList.add('active');
   livePreview();
 }
-
-function g(id) { return document.getElementById(id)?.value || ''; }
-
+function g(id){return document.getElementById(id)?.value||'';}
 function getFormData() {
-  switch (currentType) {
-    case 'url':   return { url: g('url-input') };
-    case 'wifi':  return { ssid: g('wifi-ssid'), password: g('wifi-pass'), security: g('wifi-sec') };
-    case 'phone': return { phone: g('phone-input') };
-    case 'email': return { email: g('email-to'), subject: g('email-subject'), body: g('email-body') };
-    case 'vcard': return { name: g('vc-name'), org: g('vc-org'), phone: g('vc-phone'), email: g('vc-email'), url: g('vc-url') };
-    case 'text':  return { text: g('text-input') };
+  switch(currentType) {
+    case 'url':   return {url:g('url-input')};
+    case 'wifi':  return {ssid:g('wifi-ssid'),password:g('wifi-pass'),security:g('wifi-sec')};
+    case 'phone': return {phone:g('phone-input')};
+    case 'email': return {email:g('email-to'),subject:g('email-subject'),body:g('email-body')};
+    case 'vcard': return {name:g('vc-name'),org:g('vc-org'),phone:g('vc-phone'),email:g('vc-email'),url:g('vc-url')};
+    case 'text':  return {text:g('text-input')};
   }
 }
-
 function buildQRStr(type, data) {
-  if (!data) return '';
-  switch (type) {
-    case 'url':   return data.url || '';
+  if(!data) return '';
+  switch(type) {
+    case 'url':   return data.url||'';
     case 'wifi':  return `WIFI:T:${data.security};S:${data.ssid};P:${data.password};H:false;;`;
     case 'phone': return `tel:${data.phone}`;
-    case 'email': {
-      let s = `mailto:${data.email}`;
-      if (data.subject) s += `?subject=${encodeURIComponent(data.subject)}`;
-      if (data.body)    s += `${data.subject?'&':'?'}body=${encodeURIComponent(data.body)}`;
-      return s;
-    }
+    case 'email': { let s=`mailto:${data.email}`; if(data.subject)s+=`?subject=${encodeURIComponent(data.subject)}`; if(data.body)s+=`${data.subject?'&':'?'}body=${encodeURIComponent(data.body)}`; return s; }
     case 'vcard': return `BEGIN:VCARD\nVERSION:3.0\nFN:${data.name}\nORG:${data.org}\nTEL:${data.phone}\nEMAIL:${data.email}\nURL:${data.url}\nEND:VCARD`;
-    case 'text':  return data.text || '';
-    default:      return typeof data === 'string' ? data : (data.text || JSON.stringify(data));
+    case 'text':  return data.text||'';
+    default:      return typeof data==='string'?data:(data.text||JSON.stringify(data));
   }
 }
 
-// ─── LIVE PREVIEW ────────────────────────────────────────
+// ─── LIVE PREVIEW ─────────────────────────────────────────
 async function livePreview(forceStr) {
-  let qrStr = forceStr;
-  if (!qrStr) {
-    if (currentMode === 'file' && currentFile) {
-      qrStr = currentFile.qrText || currentFile.text?.substring(0, 300) || currentFile.name;
-    } else {
-      qrStr = buildQRStr(currentType, getFormData());
-    }
-  }
-  if (!qrStr) {
-    document.getElementById('prev-empty').style.display = 'block';
-    document.getElementById('qr-prev-canvas').style.display = 'none';
-    document.getElementById('prev-meta').style.display = 'none';
-    return;
-  }
-  lastQRData = qrStr;
-  const fore = document.getElementById('c-fore').value;
-  const back = document.getElementById('c-back').value;
-  const ecl  = document.getElementById('qr-ecl').value;
-  const canvas = document.getElementById('qr-prev-canvas');
-  await new Promise(res => {
-    QRCode.toCanvas(canvas, qrStr, { width:240, color:{dark:fore,light:back}, errorCorrectionLevel:ecl, margin:2 }, ()=>res());
-  });
-  if (logoEnabled && logoBase64) await drawLogoOnCanvas(canvas, logoBase64, logoSize);
-  document.getElementById('prev-empty').style.display = 'none';
-  canvas.style.display = 'block';
+  let qrStr=forceStr;
+  if(!qrStr) { qrStr=currentMode==='file'&&currentFile?(currentFile.qrText||currentFile.text?.substring(0,300)||currentFile.name):buildQRStr(currentType,getFormData()); }
+  if(!qrStr) { document.getElementById('prev-empty').style.display='block'; document.getElementById('qr-prev-canvas').style.display='none'; document.getElementById('prev-meta').style.display='none'; return; }
+  lastQRData=qrStr;
+  const fore=document.getElementById('c-fore').value, back=document.getElementById('c-back').value, ecl=document.getElementById('qr-ecl').value;
+  const canvas=document.getElementById('qr-prev-canvas');
+  await new Promise(res=>{QRCode.toCanvas(canvas,qrStr,{width:240,color:{dark:fore,light:back},errorCorrectionLevel:ecl,margin:2},()=>res());});
+  if(logoEnabled&&logoBase64) await drawLogoOnCanvas(canvas,logoBase64,logoSize);
+  document.getElementById('prev-empty').style.display='none';
+  canvas.style.display='block';
 }
-
-function drawLogoOnCanvas(canvas, base64, size) {
-  return new Promise(res => {
-    const img = new Image();
-    img.onload = () => {
-      const ctx = canvas.getContext('2d');
-      const cx  = (canvas.width  - size) / 2;
-      const cy  = (canvas.height - size) / 2;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(cx - 4, cy - 4, size + 8, size + 8);
-      ctx.drawImage(img, cx, cy, size, size);
-      res();
-    };
-    img.onerror = () => res();
-    img.src = base64;
+function drawLogoOnCanvas(canvas,base64,size) {
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{const ctx=canvas.getContext('2d');const cx=(canvas.width-size)/2,cy=(canvas.height-size)/2;ctx.fillStyle='#ffffff';ctx.fillRect(cx-4,cy-4,size+8,size+8);ctx.drawImage(img,cx,cy,size,size);res();};
+    img.onerror=()=>res(); img.src=base64;
   });
 }
-
-async function buildFinalCanvas(qrStr, size) {
-  const fore = document.getElementById('c-fore').value;
-  const back = document.getElementById('c-back').value;
-  const ecl  = document.getElementById('qr-ecl').value;
-  const canvas = document.createElement('canvas');
-  await new Promise(res => {
-    QRCode.toCanvas(canvas, qrStr, { width:size, color:{dark:fore,light:back}, errorCorrectionLevel:ecl, margin:2 }, ()=>res());
-  });
-  if (logoEnabled && logoBase64) {
-    const scaledLogoSize = Math.round(logoSize * (size / 240));
-    await drawLogoOnCanvas(canvas, logoBase64, scaledLogoSize);
-  }
+async function buildFinalCanvas(qrStr,size) {
+  const fore=document.getElementById('c-fore').value, back=document.getElementById('c-back').value, ecl=document.getElementById('qr-ecl').value;
+  const canvas=document.createElement('canvas');
+  await new Promise(res=>{QRCode.toCanvas(canvas,qrStr,{width:size,color:{dark:fore,light:back},errorCorrectionLevel:ecl,margin:2},()=>res());});
+  if(logoEnabled&&logoBase64) await drawLogoOnCanvas(canvas,logoBase64,Math.round(logoSize*(size/240)));
   return canvas;
 }
 
-// ─── LOGO UI ─────────────────────────────────────────────
-function toggleLogo() {
-  logoEnabled = document.getElementById('logo-enable').checked;
-  const body = document.getElementById('logo-body');
-  body.style.opacity       = logoEnabled ? '1' : '.4';
-  body.style.pointerEvents = logoEnabled ? 'auto' : 'none';
-  livePreview();
-}
-function handleLogoFile(e) { const f = e.target.files[0]; if (f) loadLogoFile(f); }
-function logoDropped(e) {
-  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
-  const f = e.dataTransfer.files[0];
-  if (f && f.type.startsWith('image/')) loadLogoFile(f);
-}
-function loadLogoFile(file) {
-  const reader = new FileReader();
-  reader.onload = ev => {
-    logoBase64 = ev.target.result;
-    document.getElementById('logo-thumb').innerHTML = `<img src="${logoBase64}" alt="logo">`;
-    document.getElementById('btn-clear-logo').style.display = '';
-    document.getElementById('settings-logo-thumb').innerHTML = `<img src="${logoBase64}" alt="logo">`;
-    document.getElementById('settings-logo-name').textContent = file.name;
-    if (logoEnabled) livePreview();
-    toast('โหลดโลโก้สำเร็จ', 'success');
-  };
-  reader.readAsDataURL(file);
-}
-function updateLogoSize(v) {
-  logoSize = parseInt(v);
-  document.getElementById('logo-size-val').textContent = v + ' px';
-  if (logoEnabled) livePreview();
-}
-function clearLogo() {
-  logoBase64 = '';
-  document.getElementById('logo-thumb').innerHTML = '🏛️';
-  document.getElementById('btn-clear-logo').style.display = 'none';
-  document.getElementById('settings-logo-thumb').innerHTML = '🏛️';
-  document.getElementById('settings-logo-name').textContent = 'ยังไม่มีโลโก้';
-  document.getElementById('logo-input').value = '';
-  if (logoEnabled) livePreview();
-}
-async function saveLogoToSheets() {
-  if (!logoBase64) { toast('กรุณาเลือกโลโก้ก่อน', 'error'); return; }
-  showLoader('กำลังบันทึกโลโก้...');
-  try {
-    const r = await gasCall('saveLogo', { base64: logoBase64, size: logoSize });
-    if (r.demo) { toast('โหมดตัวอย่าง', 'info'); return; }
-    if (r.error) throw new Error(r.error);
-    document.getElementById('logo-save-status').innerHTML =
-      '<div class="si-box si-ok" style="margin-top:0"><div class="si-dot"></div>บันทึกโลโก้สำเร็จ</div>';
-    toast('บันทึกโลโก้สำเร็จ', 'success');
-  } catch(e) { toast('เกิดข้อผิดพลาด: ' + e.message, 'error'); }
-  finally { hideLoader(); }
-}
-async function removeLogoFromSheets() {
-  showLoader('กำลังลบโลโก้...');
-  try {
-    await gasCall('removeLogo', {});
-    clearLogo();
-    toast('ลบโลโก้สำเร็จ', 'success');
-  } catch(e) { toast('เกิดข้อผิดพลาด: ' + e.message, 'error'); }
-  finally { hideLoader(); }
-}
+// ─── LOGO ─────────────────────────────────────────────────
+function toggleLogo(){logoEnabled=document.getElementById('logo-enable').checked;const b=document.getElementById('logo-body');b.style.opacity=logoEnabled?'1':'.4';b.style.pointerEvents=logoEnabled?'auto':'none';livePreview();}
+function handleLogoFile(e){const f=e.target.files[0];if(f)loadLogoFile(f);}
+function logoDropped(e){e.preventDefault();e.currentTarget.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadLogoFile(f);}
+function loadLogoFile(file){const r=new FileReader();r.onload=ev=>{logoBase64=ev.target.result;document.getElementById('logo-thumb').innerHTML=`<img src="${logoBase64}" alt="logo">`;document.getElementById('btn-clear-logo').style.display='';document.getElementById('settings-logo-thumb').innerHTML=`<img src="${logoBase64}" alt="logo">`;document.getElementById('settings-logo-name').textContent=file.name;if(logoEnabled)livePreview();toast('โหลดโลโก้สำเร็จ','success');};r.readAsDataURL(file);}
+function updateLogoSize(v){logoSize=parseInt(v);document.getElementById('logo-size-val').textContent=v+' px';if(logoEnabled)livePreview();}
+function clearLogo(){logoBase64='';document.getElementById('logo-thumb').innerHTML='🏛️';document.getElementById('btn-clear-logo').style.display='none';document.getElementById('settings-logo-thumb').innerHTML='🏛️';document.getElementById('settings-logo-name').textContent='ยังไม่มีโลโก้';document.getElementById('logo-input').value='';if(logoEnabled)livePreview();}
+async function saveLogoToSheets(){if(!logoBase64){toast('กรุณาเลือกโลโก้ก่อน','error');return;}showLoader('บันทึกโลโก้...');try{const r=await gasCall('saveLogo',{base64:logoBase64,size:logoSize});if(r.demo){toast('ตั้งค่า GAS URL ก่อน','info');return;}if(r.error)throw new Error(r.error);document.getElementById('logo-save-status').innerHTML='<div class="si-box si-ok"><div class="si-dot"></div>บันทึกโลโก้สำเร็จ</div>';toast('บันทึกโลโก้สำเร็จ','success');}catch(e){toast('เกิดข้อผิดพลาด: '+e.message,'error');}finally{hideLoader();}}
+async function removeLogoFromSheets(){showLoader('ลบโลโก้...');try{await gasCall('removeLogo',{});clearLogo();toast('ลบโลโก้สำเร็จ','success');}catch(e){toast('เกิดข้อผิดพลาด: '+e.message,'error');}finally{hideLoader();}}
 
-// ─── GENERATE & SAVE ─────────────────────────────────────
-async function generateAndSave() {
-  let qrStr = lastQRData;
-  if (!qrStr) {
-    qrStr = currentMode === 'file' && currentFile
-      ? (currentFile.qrText || currentFile.name)
-      : buildQRStr(currentType, getFormData());
-  }
-  if (!qrStr) { toast('กรุณากรอกข้อมูลก่อน', 'error'); return; }
+// ─── GENERATE & SAVE ──────────────────────────────────────
+async function doGenerateAndSave() {
+  let qrStr=lastQRData||buildQRStr(currentType,getFormData());
+  if(currentMode==='file'&&currentFile) qrStr=currentFile.qrText||currentFile.name;
+  if(!qrStr){toast('กรุณากรอกข้อมูลก่อน','error');return;}
   showLoader('กำลังสร้างและบันทึก...');
   try {
-    const result = await gasCall('generateAndSave', {
-      type:      currentMode === 'file' ? 'file' : currentType,
-      data:      currentMode === 'file' ? { text: qrStr } : getFormData(),
-      foreColor: document.getElementById('c-fore').value,
-      backColor: document.getElementById('c-back').value,
-      hasLogo:   logoEnabled && !!logoBase64,
-      source:    currentMode,
-      note:      ''
-    });
-    let refId = '';
-    if (!result.demo) {
-      if (result.error) throw new Error(result.error);
-      refId = result.refId;
-      toast(`✓ บันทึก Sheets สำเร็จ รหัส: ${refId}`, 'success');
-    } else {
-      refId = genRefId();
-      toast('โหมดตัวอย่าง — QR สร้างแล้ว (ไม่มี Sheets)', 'info');
-    }
-    currentRefId = refId;
-    document.getElementById('prev-meta').style.display = 'flex';
-    document.getElementById('prev-ref').textContent = refId;
-    document.getElementById('prev-type-lbl').textContent = TYPE_LABELS[currentMode === 'file' ? 'file' : currentType] || currentType;
-    enableDownloadBtns();
-  } catch(e) {
-    currentRefId = genRefId();
-    enableDownloadBtns();
-    toast('QR สร้างแล้ว (บันทึก Sheets ไม่สำเร็จ: ' + e.message + ')', 'info');
-  } finally { hideLoader(); }
+    const r=await gasCall('generateAndSave',{type:currentMode==='file'?'file':currentType,data:currentMode==='file'?{text:qrStr}:getFormData(),foreColor:document.getElementById('c-fore').value,backColor:document.getElementById('c-back').value,hasLogo:logoEnabled&&!!logoBase64,source:currentMode,note:''});
+    let refId='';
+    if(!r.demo){if(r.error)throw new Error(r.error);refId=r.refId;toast(`✓ บันทึก Sheets สำเร็จ รหัส: ${refId}`,'success');}
+    else{refId=genRefId();toast('QR สร้างแล้ว (โหมดตัวอย่าง — ตั้งค่า GAS URL เพื่อบันทึก)','info');}
+    currentRefId=refId;
+    document.getElementById('prev-meta').style.display='flex';
+    document.getElementById('prev-ref').textContent=refId;
+    document.getElementById('prev-type-lbl').textContent=TYPE_LABELS[currentMode==='file'?'file':currentType]||currentType;
+    ['btn-dl-png','btn-dl-svg','btn-copy','btn-drive'].forEach(id=>document.getElementById(id).disabled=false);
+  }catch(e){currentRefId=genRefId();['btn-dl-png','btn-dl-svg','btn-copy','btn-drive'].forEach(id=>document.getElementById(id).disabled=false);toast('QR สร้างแล้ว (บันทึกไม่สำเร็จ: '+e.message+')','info');}
+  finally{hideLoader();}
 }
+function genRefId(){const pre={url:'URL',wifi:'WFI',phone:'TEL',email:'EML',vcard:'VCD',text:'TXT',file:'FIL',batch:'BCH'};let s='';for(let i=0;i<6;i++)s+='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random()*36)];return(pre[currentType]||'QRC')+s;}
 
-function enableDownloadBtns() {
-  ['btn-dl-png','btn-dl-svg','btn-copy','btn-drive'].forEach(id => document.getElementById(id).disabled = false);
-}
-function genRefId() {
-  const pre = { url:'URL', wifi:'WFI', phone:'TEL', email:'EML', vcard:'VCD', text:'TXT', file:'FIL', batch:'BCH' };
-  const p = pre[currentType] || 'QRC';
-  let s = '';
-  for (let i=0;i<6;i++) s += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random()*36)];
-  return p + s;
-}
-
-// ─── DOWNLOAD ────────────────────────────────────────────
-async function downloadQR(format) {
-  if (!lastQRData) { toast('กรุณาสร้าง QR ก่อน', 'error'); return; }
-  const size = parseInt(document.getElementById('qr-size').value);
-  const name = `QR_${currentRefId || 'code'}`;
+// ─── DOWNLOAD ─────────────────────────────────────────────
+async function downloadQR(fmt){
+  if(!lastQRData){toast('กรุณาสร้าง QR ก่อน','error');return;}
+  const size=parseInt(document.getElementById('qr-size').value);
   showLoader('กำลังสร้างไฟล์...');
-  try {
-    if (format === 'png') {
-      const canvas = await buildFinalCanvas(lastQRData, size);
-      const a = document.createElement('a'); a.download = name+'.png'; a.href = canvas.toDataURL('image/png'); a.click();
-      toast('ดาวน์โหลด PNG สำเร็จ', 'success');
-    } else {
-      const fore = document.getElementById('c-fore').value;
-      const back = document.getElementById('c-back').value;
-      const ecl  = document.getElementById('qr-ecl').value;
-      QRCode.toString(lastQRData, { type:'svg', color:{dark:fore,light:back}, errorCorrectionLevel:ecl, margin:2 }, (err, svg) => {
-        if (!err) {
-          const b = new Blob([svg],{type:'image/svg+xml'});
-          const a = document.createElement('a'); a.download = name+'.svg'; a.href = URL.createObjectURL(b); a.click();
-          toast('ดาวน์โหลด SVG สำเร็จ', 'success');
-        }
-      });
-    }
-  } finally { hideLoader(); }
+  try{
+    if(fmt==='png'){const c=await buildFinalCanvas(lastQRData,size);const a=document.createElement('a');a.download=`QR_${currentRefId||'code'}.png`;a.href=c.toDataURL('image/png');a.click();toast('ดาวน์โหลด PNG สำเร็จ','success');}
+    else{const fore=document.getElementById('c-fore').value,back=document.getElementById('c-back').value,ecl=document.getElementById('qr-ecl').value;QRCode.toString(lastQRData,{type:'svg',color:{dark:fore,light:back},errorCorrectionLevel:ecl,margin:2},(err,svg)=>{if(!err){const b=new Blob([svg],{type:'image/svg+xml'});const a=document.createElement('a');a.download=`QR_${currentRefId||'code'}.svg`;a.href=URL.createObjectURL(b);a.click();toast('ดาวน์โหลด SVG สำเร็จ','success');}});}
+  }finally{hideLoader();}
 }
-async function copyQR() {
-  if (!lastQRData) return;
-  showLoader('กำลังคัดลอก...');
-  try {
-    const canvas = await buildFinalCanvas(lastQRData, 400);
-    canvas.toBlob(async blob => {
-      await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
-      toast('คัดลอกรูปภาพสำเร็จ', 'success');
-    });
-  } catch(e) { toast('คัดลอกไม่ได้: '+e.message,'error'); }
-  finally { hideLoader(); }
-}
-async function saveToDrive() {
-  if (!lastQRData) { toast('กรุณาสร้าง QR ก่อน','error'); return; }
-  showLoader('กำลังอัปโหลด Drive...');
-  try {
-    const size   = parseInt(document.getElementById('qr-size').value);
-    const canvas = await buildFinalCanvas(lastQRData, size);
-    const result = await gasCall('saveQRToDrive', { imageBase64: canvas.toDataURL('image/png'), refId: currentRefId });
-    if (result.demo) { toast('ต้องเชื่อมต่อ GAS ก่อน','info'); return; }
-    if (result.error) throw new Error(result.error);
-    toast(`☁ บันทึก Drive สำเร็จ: ${result.fileName}`, 'success');
-  } catch(e) { toast('เกิดข้อผิดพลาด: '+e.message,'error'); }
-  finally { hideLoader(); }
-}
+async function copyQR(){if(!lastQRData)return;showLoader('กำลังคัดลอก...');try{const c=await buildFinalCanvas(lastQRData,400);c.toBlob(async b=>{await navigator.clipboard.write([new ClipboardItem({'image/png':b})]);toast('คัดลอกสำเร็จ','success');});}catch(e){toast('คัดลอกไม่ได้: '+e.message,'error');}finally{hideLoader();}}
+async function saveToDrive(){if(!lastQRData){toast('กรุณาสร้าง QR ก่อน','error');return;}showLoader('กำลังอัปโหลด...');try{const c=await buildFinalCanvas(lastQRData,parseInt(document.getElementById('qr-size').value));const r=await gasCall('saveQRToDrive',{imageBase64:c.toDataURL('image/png'),refId:currentRefId});if(r.demo){toast('ตั้งค่า GAS URL ก่อน','info');return;}if(r.error)throw new Error(r.error);toast(`☁ บันทึก Drive สำเร็จ: ${r.fileName}`,'success');}catch(e){toast('เกิดข้อผิดพลาด: '+e.message,'error');}finally{hideLoader();}}
+function applyPreset(fore,back,btn){document.getElementById('c-fore').value=fore;document.getElementById('c-back').value=back;document.querySelectorAll('.presets .pset').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');livePreview();}
 
-function applyPreset(fore, back, btn) {
-  document.getElementById('c-fore').value = fore;
-  document.getElementById('c-back').value = back;
-  document.querySelectorAll('.presets .pset').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  livePreview();
-}
+// ─── DRAG & DROP ──────────────────────────────────────────
+function dOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
+function dLeave(e){e.currentTarget.classList.remove('drag-over');}
+function dDrop(e){e.preventDefault();e.currentTarget.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)processFile(f);}
+function handleFile(e){const f=e.target.files[0];if(f)processFile(f);}
 
-// ─── DRAG & DROP ─────────────────────────────────────────
-function dOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
-function dLeave(e) { e.currentTarget.classList.remove('drag-over'); }
-function dDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const f=e.dataTransfer.files[0]; if(f) processFile(f); }
-
-// ─── FILE IMPORT ─────────────────────────────────────────
-function handleFile(e) { const f=e.target.files[0]; if(f) processFile(f); }
-async function processFile(file) {
+// ─── FILE IMPORT ──────────────────────────────────────────
+async function processFile(file){
   showLoader(`กำลังอ่าน ${file.name}...`);
-  const ext = file.name.split('.').pop().toLowerCase();
-  try {
-    let text='', rows=[], headers=[], type='text';
-    if (['txt','md','html','htm','css','js','ts','py','java','c','cpp','sh','log','ini','yaml','yml','sql'].includes(ext)) {
-      text = await rdText(file); type='text';
-    } else if (ext==='json') {
-      const raw=await rdText(file);
-      try { const p=JSON.parse(raw); text=JSON.stringify(p,null,2); rows=Array.isArray(p)?p.map(r=>typeof r==='object'?JSON.stringify(r):String(r)):[raw]; } catch { text=raw; }
-      type='json';
-    } else if (['csv','tsv'].includes(ext)) {
-      text=await rdText(file); const p=Papa.parse(text,{header:true,skipEmptyLines:true}); rows=p.data; headers=p.meta.fields||[]; type='csv';
-    } else if (['xlsx','xls'].includes(ext)) {
-      const ab=await rdAB(file); const wb=XLSX.read(ab); const ws=wb.Sheets[wb.SheetNames[0]];
-      rows=XLSX.utils.sheet_to_json(ws); headers=rows.length?Object.keys(rows[0]):[]; text=XLSX.utils.sheet_to_csv(ws); type='xlsx';
-    } else if (ext==='pdf') {
-      const ab=await rdAB(file); const pdf=await pdfjsLib.getDocument({data:ab}).promise;
-      let t='';
-      for(let i=1;i<=Math.min(pdf.numPages,5);i++){const pg=await pdf.getPage(i);const tc=await pg.getTextContent();t+=tc.items.map(x=>x.str).join(' ')+'\n';}
-      text=t.trim(); type='pdf';
-    } else if (ext==='docx') {
-      const ab=await rdAB(file); const r=await mammoth.extractRawText({arrayBuffer:ab}); text=r.value; type='docx';
-    } else {
-      text=file.name; type='binary';
-    }
+  const ext=file.name.split('.').pop().toLowerCase();
+  try{
+    let text='',rows=[],headers=[],type='text';
+    if(['txt','md','html','css','js','py','java','sh','log','yaml','yml','sql'].includes(ext)){text=await rdText(file);type='text';}
+    else if(ext==='json'){const raw=await rdText(file);try{const p=JSON.parse(raw);text=JSON.stringify(p,null,2);rows=Array.isArray(p)?p.map(r=>typeof r==='object'?JSON.stringify(r):String(r)):[raw];}catch{text=raw;}type='json';}
+    else if(['csv','tsv'].includes(ext)){text=await rdText(file);const p=Papa.parse(text,{header:true,skipEmptyLines:true});rows=p.data;headers=p.meta.fields||[];type='csv';}
+    else if(['xlsx','xls'].includes(ext)){const ab=await rdAB(file);const wb=XLSX.read(ab);const ws=wb.Sheets[wb.SheetNames[0]];rows=XLSX.utils.sheet_to_json(ws);headers=rows.length?Object.keys(rows[0]):[];text=XLSX.utils.sheet_to_csv(ws);type='xlsx';}
+    else if(ext==='pdf'){const ab=await rdAB(file);const pdf=await pdfjsLib.getDocument({data:ab}).promise;let t='';for(let i=1;i<=Math.min(pdf.numPages,5);i++){const pg=await pdf.getPage(i);const tc=await pg.getTextContent();t+=tc.items.map(x=>x.str).join(' ')+'\n';}text=t.trim();type='pdf';}
+    else if(ext==='docx'){const ab=await rdAB(file);const r=await mammoth.extractRawText({arrayBuffer:ab});text=r.value;type='docx';}
+    else{text=file.name;type='binary';}
     const urls=(text.match(/https?:\/\/[^\s"'<>]+/g)||[]);
     currentFile={name:file.name,size:file.size,ext,type,text,rows,headers,urls:[...new Set(urls)],qrText:text.substring(0,300)};
-    renderFilePreview(currentFile);
-    livePreview(currentFile.qrText);
+    renderFilePreview(currentFile); livePreview(currentFile.qrText);
     toast(`อ่านไฟล์สำเร็จ: ${file.name}`,'success');
-  } catch(e) {
-    document.getElementById('fp-body').innerHTML=`<div style="color:var(--red);padding:14px">เกิดข้อผิดพลาด: ${e.message}</div>`;
-    document.getElementById('fprev').classList.add('visible');
-    toast('อ่านไฟล์ไม่ได้: '+e.message,'error');
-  } finally { hideLoader(); }
+  }catch(e){document.getElementById('fp-body').innerHTML=`<div style="color:var(--red);padding:14px">เกิดข้อผิดพลาด: ${e.message}</div>`;document.getElementById('fprev').classList.add('visible');toast('อ่านไฟล์ไม่ได้: '+e.message,'error');}
+  finally{hideLoader();}
 }
-
-function renderFilePreview(f) {
-  const icons={pdf:'📕',xlsx:'📗',csv:'📊',docx:'📘',txt:'📄',json:'📋',image:'🖼️',binary:'📄',xml:'🗂️',text:'📄'};
+function renderFilePreview(f){
+  const icons={pdf:'📕',xlsx:'📗',csv:'📊',docx:'📘',txt:'📄',json:'📋',binary:'📄',text:'📄'};
   document.getElementById('fp-name').innerHTML=`${icons[f.type]||'📄'} ${esc(f.name)}`;
   document.getElementById('fp-meta').textContent=`${fmtBytes(f.size)} · .${f.ext.toUpperCase()}`;
-  let bodyHtml='';
-  if(f.rows?.length&&['csv','xlsx','json'].includes(f.type)){bodyHtml=tblHtml(f.rows.slice(0,5),f.headers);}
-  else{bodyHtml=`<pre>${esc(f.text?.substring(0,1500))}${f.text?.length>1500?'…':''}</pre>`;}
-  document.getElementById('fp-body').innerHTML=bodyHtml;
+  let body='';
+  if(f.rows?.length&&['csv','xlsx','json'].includes(f.type))body=tblHtml(f.rows.slice(0,5),f.headers);
+  else body=`<pre>${esc(f.text?.substring(0,1500))}${f.text?.length>1500?'…':''}</pre>`;
+  document.getElementById('fp-body').innerHTML=body;
   document.getElementById('fprev').classList.add('visible');
   document.getElementById('extract-bar').classList.add('visible');
 }
+function useFile(mode){if(!currentFile)return;let q='';if(mode==='full'){q=currentFile.text?.substring(0,300)||currentFile.name;toast('ใช้เนื้อหา 300 อักขระแรก','info');}else if(mode==='url'){if(!currentFile.urls?.length){toast('ไม่พบ URL','error');return;}q=currentFile.urls[0];toast('ใช้ URL แรกที่พบ','info');}else{q=currentFile.name;toast('ใช้ชื่อไฟล์','info');}currentFile.qrText=q;livePreview(q);}
+function toFileBatch(){if(!currentFile?.rows?.length){toast('ไฟล์นี้ไม่มีหลายแถว','error');return;}showView('batch');loadBatchFromData(currentFile.rows,currentFile.headers);}
 
-function useFile(mode) {
-  if(!currentFile) return;
-  let qrText='';
-  if(mode==='full'){qrText=currentFile.text?.substring(0,300)||currentFile.name; toast('ใช้เนื้อหา 300 อักขระแรก','info');}
-  else if(mode==='url'){if(!currentFile.urls?.length){toast('ไม่พบ URL','error');return;} qrText=currentFile.urls[0]; toast('ใช้ URL แรกที่พบ','info');}
-  else{qrText=currentFile.name; toast('ใช้ชื่อไฟล์','info');}
-  currentFile.qrText=qrText; livePreview(qrText);
-}
-function toFileBatch() {
-  if(!currentFile?.rows?.length){toast('ไฟล์นี้ไม่มีหลายแถว ลองใช้ CSV/XLSX','error');return;}
-  showView('batch'); loadBatchFromData(currentFile.rows,currentFile.headers);
-}
-
-// ─── BATCH ───────────────────────────────────────────────
+// ─── BATCH ────────────────────────────────────────────────
 function batchDrop(e){e.preventDefault();e.currentTarget.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)loadBatchFileRaw(f);}
 function handleBatchFile(e){const f=e.target.files[0];if(f)loadBatchFileRaw(f);}
-async function loadBatchFileRaw(file) {
-  showLoader(`อ่านไฟล์ Batch: ${file.name}...`);
-  try {
-    const ext=file.name.split('.').pop().toLowerCase(); let rows=[],headers=[];
+async function loadBatchFileRaw(file){
+  showLoader(`อ่าน Batch: ${file.name}...`);
+  try{
+    const ext=file.name.split('.').pop().toLowerCase();let rows=[],headers=[];
     if(['csv','tsv'].includes(ext)){const t=await rdText(file);const p=Papa.parse(t,{header:true,skipEmptyLines:true});rows=p.data;headers=p.meta.fields||[];}
     else if(['xlsx','xls'].includes(ext)){const ab=await rdAB(file);const wb=XLSX.read(ab);const ws=wb.Sheets[wb.SheetNames[0]];rows=XLSX.utils.sheet_to_json(ws);headers=rows.length?Object.keys(rows[0]):[];}
     else if(ext==='txt'){const t=await rdText(file);rows=t.split('\n').filter(l=>l.trim()).map(l=>({value:l.trim()}));headers=['value'];}
     else if(ext==='json'){const t=await rdText(file);const p=JSON.parse(t);rows=Array.isArray(p)?p:[p];if(typeof rows[0]==='string')rows=rows.map(r=>({value:r}));headers=rows.length&&typeof rows[0]==='object'?Object.keys(rows[0]):['value'];}
-    loadBatchFromData(rows,headers);
-    toast(`โหลด ${rows.length} รายการสำเร็จ`,'success');
-  } catch(e){toast('อ่านไม่ได้: '+e.message,'error');}
-  finally{hideLoader();}
+    loadBatchFromData(rows,headers); toast(`โหลด ${rows.length} รายการสำเร็จ`,'success');
+  }catch(e){toast('อ่านไม่ได้: '+e.message,'error');}finally{hideLoader();}
 }
-function loadBatchFromData(rows,headers) {
+function loadBatchFromData(rows,headers){
   if(!rows?.length){toast('ไม่พบข้อมูล','error');return;}
-  window._batchRows=rows; window._batchHeaders=headers;
+  window._batchRows=rows;window._batchHeaders=headers;
   const sel=document.getElementById('batch-col');
   sel.innerHTML=(headers||[]).map(h=>`<option value="${esc(h)}">${esc(h)}</option>`).join('');
   document.getElementById('batch-col-wrap').style.display=headers.length>1?'block':'none';
-  refreshBatchList();
-  document.getElementById('batch-list-wrap').style.display='block';
-  document.getElementById('btn-run-batch').disabled=false;
+  refreshBatchList(); document.getElementById('batch-list-wrap').style.display='block'; document.getElementById('btn-run-batch').disabled=false;
 }
-function refreshBatchList() {
-  const rows=window._batchRows||[]; const col=document.getElementById('batch-col')?.value||(window._batchHeaders||[])[0];
-  batchItems=rows.map((r,i)=>{const v=col?String(r[col]||''):(typeof r==='string'?r:JSON.stringify(r));return{data:v,label:`#${i+1} ${v.substring(0,40)}`,selected:!!v.trim()};}).filter(x=>x.data.trim());
-  renderBatchList();
-}
-function renderBatchList() {
-  const el=document.getElementById('batch-list');
-  document.getElementById('batch-count-lbl').textContent=batchItems.length+' รายการ';
-  el.innerHTML=batchItems.map((item,i)=>`<div class="bi"><input type="checkbox" class="bi-chk" ${item.selected?'checked':''} onchange="batchItems[${i}].selected=this.checked"><span class="bi-num">#${i+1}</span><span class="bi-data" title="${esc(item.data)}">${esc(item.data.substring(0,60))}</span></div>`).join('');
-}
+function refreshBatchList(){const rows=window._batchRows||[];const col=document.getElementById('batch-col')?.value||(window._batchHeaders||[])[0];batchItems=rows.map((r,i)=>{const v=col?String(r[col]||''):(typeof r==='string'?r:JSON.stringify(r));return{data:v,label:`#${i+1} ${v.substring(0,40)}`,selected:!!v.trim()};}).filter(x=>x.data.trim());renderBatchList();}
+function renderBatchList(){const el=document.getElementById('batch-list');document.getElementById('batch-count-lbl').textContent=batchItems.length+' รายการ';el.innerHTML=batchItems.map((item,i)=>`<div class="bi"><input type="checkbox" class="bi-chk" ${item.selected?'checked':''} onchange="batchItems[${i}].selected=this.checked"><span class="bi-num">#${i+1}</span><span class="bi-data" title="${esc(item.data)}">${esc(item.data.substring(0,60))}</span></div>`).join('');}
 function selAll(v){batchItems.forEach(x=>x.selected=v);renderBatchList();}
-
-async function runBatch() {
-  const sel=batchItems.filter(x=>x.selected);
-  if(!sel.length){toast('กรุณาเลือกรายการก่อน','error');return;}
-  const fore=document.getElementById('bc-fore').value, back=document.getElementById('bc-back').value;
-  const size=parseInt(document.getElementById('bc-size').value), ecl=document.getElementById('bc-ecl').value;
+async function runBatch(){
+  const sel=batchItems.filter(x=>x.selected);if(!sel.length){toast('กรุณาเลือกรายการก่อน','error');return;}
+  const fore=document.getElementById('bc-fore').value,back=document.getElementById('bc-back').value,size=parseInt(document.getElementById('bc-size').value),ecl=document.getElementById('bc-ecl').value;
   const useLogo=document.getElementById('bc-logo').checked&&logoEnabled&&!!logoBase64;
-  document.getElementById('batch-prog-wrap').style.display='block';
-  document.getElementById('batch-empty-msg').style.display='none';
-  batchCanvases=[];
+  document.getElementById('batch-prog-wrap').style.display='block';document.getElementById('batch-empty-msg').style.display='none';batchCanvases=[];
   for(let i=0;i<sel.length;i++){
-    const item=sel[i]; const pct=Math.round(((i+1)/sel.length)*100);
-    document.getElementById('b-prog-lbl').textContent=`สร้าง ${i+1}/${sel.length}`;
-    document.getElementById('b-prog-pct').textContent=pct+'%';
-    document.getElementById('b-prog-bar').style.width=pct+'%';
-    const canvas=document.createElement('canvas');
-    await new Promise(res=>{ QRCode.toCanvas(canvas,item.data,{width:size,color:{dark:fore,light:back},errorCorrectionLevel:ecl,margin:2},()=>res()); });
-    if(useLogo){await drawLogoOnCanvas(canvas,logoBase64,Math.round(logoSize*(size/240)));}
-    batchCanvases.push({canvas,label:item.data.substring(0,30),data:item.data});
-    await new Promise(r=>setTimeout(r,10));
+    const item=sel[i];const pct=Math.round(((i+1)/sel.length)*100);
+    document.getElementById('b-prog-lbl').textContent=`สร้าง ${i+1}/${sel.length}`;document.getElementById('b-prog-pct').textContent=pct+'%';document.getElementById('b-prog-bar').style.width=pct+'%';
+    const c=document.createElement('canvas');await new Promise(res=>{QRCode.toCanvas(c,item.data,{width:size,color:{dark:fore,light:back},errorCorrectionLevel:ecl,margin:2},()=>res());});
+    if(useLogo)await drawLogoOnCanvas(c,logoBase64,Math.round(logoSize*(size/240)));
+    batchCanvases.push({canvas:c,label:item.data.substring(0,30),data:item.data});await new Promise(r=>setTimeout(r,10));
   }
-  showLoader('กำลังบันทึก Batch...');
-  try {
-    const r=await gasCall('generateBatch',{items:sel.map(x=>({type:'batch',data:x.data,label:x.data.substring(0,40)})),foreColor:fore,backColor:back,hasLogo:useLogo});
-    if(!r.demo){if(r.error)throw new Error(r.error);toast(`✓ บันทึก ${r.count} รายการ`,'success');}
-    else toast(`สร้าง ${batchCanvases.length} QR สำเร็จ (โหมดตัวอย่าง)`,'info');
-  } catch(e){toast('บันทึก Sheets ไม่สำเร็จ: '+e.message,'info');}
-  finally{hideLoader();}
+  showLoader('บันทึก Batch...');
+  try{const r=await gasCall('generateBatch',{items:sel.map(x=>({type:'batch',data:x.data,label:x.data.substring(0,40)})),foreColor:fore,backColor:back,hasLogo:useLogo});if(!r.demo){if(r.error)throw new Error(r.error);toast(`✓ บันทึก ${r.count} รายการ`,'success');}else toast(`สร้าง ${batchCanvases.length} QR สำเร็จ (โหมดตัวอย่าง)`,'info');}
+  catch(e){toast('บันทึกไม่สำเร็จ: '+e.message,'info');}finally{hideLoader();}
   ['btn-dl-all','btn-prev-batch','btn-batch-drive'].forEach(id=>document.getElementById(id).disabled=false);
 }
-
-function previewBatchModal() {
-  const grid=document.getElementById('batch-grid'); grid.innerHTML='';
-  batchCanvases.forEach(({canvas,label})=>{
-    const wrap=document.createElement('div'); wrap.className='bgi';
-    const c2=document.createElement('canvas'); c2.width=canvas.width; c2.height=canvas.height;
-    c2.getContext('2d').drawImage(canvas,0,0);
-    const l=document.createElement('div'); l.className='bgi-lbl'; l.textContent=label;
-    wrap.appendChild(c2); wrap.appendChild(l); grid.appendChild(wrap);
-  });
-  document.getElementById('batch-modal').classList.add('visible');
-}
+function previewBatchModal(){const grid=document.getElementById('batch-grid');grid.innerHTML='';batchCanvases.forEach(({canvas,label})=>{const w=document.createElement('div');w.className='bgi';const c2=document.createElement('canvas');c2.width=canvas.width;c2.height=canvas.height;c2.getContext('2d').drawImage(canvas,0,0);const l=document.createElement('div');l.className='bgi-lbl';l.textContent=label;w.appendChild(c2);w.appendChild(l);grid.appendChild(w);});document.getElementById('batch-modal').classList.add('visible');}
 function closeBatchModal(){document.getElementById('batch-modal').classList.remove('visible');}
+function downloadAllBatch(){if(!batchCanvases.length)return;batchCanvases.forEach(({canvas,data},i)=>{setTimeout(()=>{const a=document.createElement('a');a.download=`QR_${String(i+1).padStart(3,'0')}.png`;a.href=canvas.toDataURL('image/png');a.click();},i*150);});toast(`กำลังดาวน์โหลด ${batchCanvases.length} ไฟล์...`,'info');}
+async function saveBatchToDrive(){if(!batchCanvases.length)return;showLoader('อัปโหลด Batch...');try{const r=await gasCall('saveQRBatchToDrive',{items:batchCanvases.map((bc,i)=>({imageBase64:bc.canvas.toDataURL('image/png'),refId:`BCH${String(i+1).padStart(4,'0')}`}))});if(r.demo){toast('ตั้งค่า GAS URL ก่อน','info');return;}if(r.error)throw new Error(r.error);toast(`☁ อัปโหลด ${r.results.filter(x=>x.ok).length} ไฟล์`,'success');}catch(e){toast('เกิดข้อผิดพลาด: '+e.message,'error');}finally{hideLoader();}}
 
-function downloadAllBatch() {
-  if(!batchCanvases.length) return;
-  batchCanvases.forEach(({canvas,data},i)=>{
-    setTimeout(()=>{const a=document.createElement('a');a.download=`QR_${String(i+1).padStart(3,'0')}.png`;a.href=canvas.toDataURL('image/png');a.click();},i*150);
-  });
-  toast(`กำลังดาวน์โหลด ${batchCanvases.length} ไฟล์...`,'info');
-}
-async function saveBatchToDrive() {
-  if(!batchCanvases.length) return;
-  showLoader('กำลังอัปโหลด Batch...');
-  try {
-    const r=await gasCall('saveQRBatchToDrive',{items:batchCanvases.map((bc,i)=>({imageBase64:bc.canvas.toDataURL('image/png'),refId:`BCH${String(i+1).padStart(4,'0')}`}))});
-    if(r.demo){toast('ต้องเชื่อมต่อ GAS ก่อน','info');return;}
-    if(r.error)throw new Error(r.error);
-    toast(`☁ อัปโหลด Drive ${r.results.filter(x=>x.ok).length} ไฟล์`,'success');
-  } catch(e){toast('เกิดข้อผิดพลาด: '+e.message,'error');}
-  finally{hideLoader();}
-}
-
-// ─── HISTORY ─────────────────────────────────────────────
-async function loadHistory(page) {
-  if(page!==undefined) histPage=page;
+// ─── HISTORY ──────────────────────────────────────────────
+async function loadHistory(page){
+  if(page!==undefined)histPage=page;
   const tbody=document.getElementById('hist-tbody');
   tbody.innerHTML=`<tr><td colspan="9"><div class="empty" style="padding:36px"><div class="empty-icon">⟳</div><h3>กำลังโหลด...</h3></div></td></tr>`;
-  try {
+  try{
     const r=await gasCall('getHistory',{limit:HIST_LIMIT,offset:histPage*HIST_LIMIT,search:histSearch});
-    if(r.demo){tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="empty-icon">📋</div><h3>โหมดตัวอย่าง</h3><p>ตั้งค่า GAS URL ในหน้า ⚙ ตั้งค่า เพื่อดูประวัติ</p></div></td></tr>`;updateStats({total:0,file:0,drive:0,batch:0});return;}
+    if(r.demo){tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="empty-icon">📋</div><h3>โหมดตัวอย่าง</h3><p>ตั้งค่า GAS URL ใน ⚙ ตั้งค่า เพื่อดูประวัติ</p></div></td></tr>`;updateStats({total:0,file:0,drive:0,batch:0});return;}
     if(r.error)throw new Error(r.error);
-    renderHistoryTable(r.records||[]);
-    renderPager(r.total||0);
+    renderHistoryTable(r.records||[]); renderPager(r.total||0);
     const recs=r.records||[];
     updateStats({total:r.total||recs.length,file:recs.filter(x=>x.type==='file'||x.source==='file').length,drive:recs.filter(x=>x.driveId).length,batch:recs.filter(x=>x.type==='batch').length});
-  } catch(e){tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="empty-icon">⚠️</div><h3>โหลดไม่ได้</h3><p>${e.message}</p></div></td></tr>`;}
+  }catch(e){tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="empty-icon">⚠️</div><h3>โหลดไม่ได้</h3><p>${esc(e.message)}</p></div></td></tr>`;}
 }
 function searchHistory(q){histSearch=q;histPage=0;clearTimeout(window._histTimer);window._histTimer=setTimeout(()=>loadHistory(0),400);}
-function renderHistoryTable(records) {
+function renderHistoryTable(records){
   const tbody=document.getElementById('hist-tbody');
   if(!records.length){tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="empty-icon">📋</div><h3>ยังไม่มีประวัติ</h3></div></td></tr>`;return;}
   tbody.innerHTML=records.map(r=>{
     const badge=TYPE_BADGES[r.type]||'b-gray';
     const dBtn=r.driveId?`<a href="https://drive.google.com/file/d/${r.driveId}/view" target="_blank" class="btn btn-ol btn-sm">☁</a>`:'—';
-    return `<tr>
-      <td><span class="refcode-sm">${esc(r.refId||'—')}</span></td>
-      <td><span class="badge ${badge}">${esc(r.type||'—')}</span></td>
-      <td style="font-size:12px;color:var(--gray-600)">${esc(r.source||'')}</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${esc((r.data||'').substring(0,60))}</td>
-      <td><div style="display:flex;gap:5px"><div style="width:16px;height:16px;border-radius:3px;background:${r.foreColor||'#000'};border:1px solid var(--gray-200)"></div><div style="width:16px;height:16px;border-radius:3px;background:${r.backColor||'#fff'};border:1px solid var(--gray-200)"></div></div></td>
-      <td style="text-align:center;font-size:12px">${r.hasLogo||'—'}</td>
-      <td style="font-size:11px;color:var(--gray-600);white-space:nowrap">${esc(r.createdAt||'')}</td>
-      <td>${dBtn}</td>
-      <td><button class="btn btn-red btn-sm" onclick="deleteRow('${esc(r.refId||'')}')">🗑</button></td>
-    </tr>`;
+    return `<tr><td><span class="refcode-sm">${esc(r.refId||'—')}</span></td><td><span class="badge ${badge}">${esc(r.type||'—')}</span></td><td style="font-size:12px;color:var(--gray-600)">${esc(r.source||'')}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${esc((r.data||'').substring(0,60))}</td><td><div style="display:flex;gap:5px"><div style="width:16px;height:16px;border-radius:3px;background:${r.foreColor||'#000'};border:1px solid #dde2ea"></div><div style="width:16px;height:16px;border-radius:3px;background:${r.backColor||'#fff'};border:1px solid #dde2ea"></div></div></td><td style="text-align:center;font-size:12px">${r.hasLogo||'—'}</td><td style="font-size:11px;color:var(--gray-600);white-space:nowrap">${esc(r.createdAt||'')}</td><td>${dBtn}</td><td><button class="btn btn-red btn-sm" onclick="deleteRow('${esc(r.refId||'')}')">🗑</button></td></tr>`;
   }).join('');
 }
-function renderPager(total) {
-  const tp=Math.ceil(total/HIST_LIMIT); const el=document.getElementById('hist-pager');
-  if(tp<=1){el.innerHTML=`<span style="color:var(--gray-400)">ทั้งหมด ${total} รายการ</span>`;return;}
-  el.innerHTML=`<button class="btn btn-ol btn-sm" onclick="loadHistory(${histPage-1})" ${histPage===0?'disabled':''}>← ก่อนหน้า</button><span style="color:var(--gray-600)">หน้า ${histPage+1}/${tp} (${total} รายการ)</span><button class="btn btn-ol btn-sm" onclick="loadHistory(${histPage+1})" ${histPage>=tp-1?'disabled':''}>ถัดไป →</button>`;
-}
+function renderPager(total){const tp=Math.ceil(total/HIST_LIMIT);const el=document.getElementById('hist-pager');if(tp<=1){el.innerHTML=`<span style="color:var(--gray-400)">ทั้งหมด ${total} รายการ</span>`;return;}el.innerHTML=`<button class="btn btn-ol btn-sm" onclick="loadHistory(${histPage-1})" ${histPage===0?'disabled':''}>← ก่อนหน้า</button><span style="color:var(--gray-600)">หน้า ${histPage+1}/${tp}</span><button class="btn btn-ol btn-sm" onclick="loadHistory(${histPage+1})" ${histPage>=tp-1?'disabled':''}>ถัดไป →</button>`;}
 function updateStats(s){document.getElementById('st-total').textContent=s.total??'—';document.getElementById('st-file').textContent=s.file??'—';document.getElementById('st-drive').textContent=s.drive??'—';document.getElementById('st-batch').textContent=s.batch??'—';}
-async function deleteRow(refId) {
-  if(!refId||!confirm(`ลบ ${refId}?`)) return;
-  showLoader('กำลังลบ...');
-  try{const r=await gasCall('deleteHistoryRow',refId);if(r.error)throw new Error(r.error);toast('ลบสำเร็จ','success');loadHistory();}
-  catch(e){toast('ลบไม่ได้: '+e.message,'error');}finally{hideLoader();}
-}
-async function confirmClear() {
-  if(!confirm('ล้างประวัติทั้งหมดใน Sheets?')) return;
-  showLoader('กำลังล้าง...');
-  try{await gasCall('clearHistory',{});toast('ล้างสำเร็จ','success');loadHistory();}
-  catch(e){toast('เกิดข้อผิดพลาด: '+e.message,'error');}finally{hideLoader();}
-}
+async function deleteRow(refId){if(!refId||!confirm(`ลบ ${refId}?`))return;showLoader('กำลังลบ...');try{const r=await gasCall('deleteHistoryRow',refId);if(r.error)throw new Error(r.error);toast('ลบสำเร็จ','success');loadHistory();}catch(e){toast('ลบไม่ได้: '+e.message,'error');}finally{hideLoader();}}
+async function confirmClear(){if(!confirm('ล้างประวัติทั้งหมดใน Sheets?'))return;showLoader('กำลังล้าง...');try{await gasCall('clearHistory',{});toast('ล้างสำเร็จ','success');loadHistory();}catch(e){toast('เกิดข้อผิดพลาด: '+e.message,'error');}finally{hideLoader();}}
 
-// ─── SETTINGS ────────────────────────────────────────────
-async function loadSettings() {
-  // Load GAS URL from localStorage
-  const saved = localStorage.getItem('gas_url') || '';
-  if (saved) {
-    document.getElementById('gas-url-input').value = saved;
-    onGasUrlInput();
-  }
-  updateGasStatusBanner();
-
-  if (!GAS_URL) return;
-  try {
-    const cfg=await gasCall('getConfig',{});
-    if(cfg.demo||cfg.error) return;
-    document.getElementById('drive-folder-id').value = cfg.drive_folder_id||'';
-    document.getElementById('org-name').value         = cfg.org_name||'';
-    document.getElementById('theme-primary').value    = cfg.primary_color||'#0d2137';
-    document.getElementById('theme-accent').value     = cfg.accent_color||'#c9a227';
-    if(cfg.logo_base64){
-      logoBase64=cfg.logo_base64; logoSize=parseInt(cfg.logo_size||'60');
-      document.getElementById('logo-size').value=logoSize;
-      document.getElementById('logo-size-val').textContent=logoSize+' px';
-      document.getElementById('logo-thumb').innerHTML=`<img src="${logoBase64}" alt="logo">`;
-      document.getElementById('settings-logo-thumb').innerHTML=`<img src="${logoBase64}" alt="logo">`;
-      document.getElementById('settings-logo-name').textContent='โลโก้จาก Sheets';
-      document.getElementById('btn-clear-logo').style.display='';
-    }
-  } catch(e){}
+// ─── SETTINGS ─────────────────────────────────────────────
+async function loadSettings(){
+  const saved=localStorage.getItem('qr_gas_url')||'';
+  if(saved){document.getElementById('gas-url-input').value=saved;GAS_URL=saved;document.getElementById('gas-dot').className='gas-dot ok';document.getElementById('gas-status-txt').textContent='บันทึกแล้ว — กด "ทดสอบ" เพื่อตรวจสอบ';}
+  if(!GAS_URL)return;
+  try{const cfg=await gasCall('getConfig',{});if(cfg.demo||cfg.error)return;if(cfg.drive_folder_id)document.getElementById('drive-folder-id').value=cfg.drive_folder_id;if(cfg.org_name)document.getElementById('org-name').value=cfg.org_name;if(cfg.primary_color)document.getElementById('theme-primary').value=cfg.primary_color;if(cfg.accent_color)document.getElementById('theme-accent').value=cfg.accent_color;if(cfg.logo_base64){logoBase64=cfg.logo_base64;logoSize=parseInt(cfg.logo_size||'60');document.getElementById('logo-size').value=logoSize;document.getElementById('logo-size-val').textContent=logoSize+' px';document.getElementById('logo-thumb').innerHTML=`<img src="${logoBase64}" alt="logo">`;document.getElementById('settings-logo-thumb').innerHTML=`<img src="${logoBase64}" alt="logo">`;document.getElementById('settings-logo-name').textContent='โลโก้จาก Sheets';document.getElementById('btn-clear-logo').style.display='';}}catch(e){}
 }
-async function saveSettings() {
-  showLoader('กำลังบันทึก...');
-  try {
-    const r=await gasCall('saveConfig',{drive_folder_id:g('drive-folder-id'),org_name:g('org-name'),primary_color:document.getElementById('theme-primary').value,accent_color:document.getElementById('theme-accent').value});
-    if(r.demo){toast('โหมดตัวอย่าง','info');return;}
-    if(r.error)throw new Error(r.error);
-    toast('บันทึกสำเร็จ','success');
-  } catch(e){toast('เกิดข้อผิดพลาด: '+e.message,'error');}
-  finally{hideLoader();}
-}
-async function testDrive() {
-  const fId=g('drive-folder-id'); if(!fId){toast('กรุณาใส่ Folder ID','error');return;}
-  showLoader('ทดสอบ Drive...');
-  try{
-    const r=await gasCall('testDriveConnection',{folderId:fId});
-    if(r.demo){setStatus('drive-status','info','โหมดตัวอย่าง');return;}
-    if(r.error)throw new Error(r.error);
-    setStatus('drive-status','ok',`เชื่อมต่อสำเร็จ: "${r.folderName}"`);
-    toast('เชื่อมต่อ Drive สำเร็จ','success');
-  } catch(e){setStatus('drive-status','err',e.message);toast('เชื่อมต่อไม่ได้','error');}
-  finally{hideLoader();}
-}
+async function saveSettings(){showLoader('บันทึก...');try{const r=await gasCall('saveConfig',{drive_folder_id:g('drive-folder-id'),org_name:g('org-name'),primary_color:document.getElementById('theme-primary').value,accent_color:document.getElementById('theme-accent').value});if(r.demo){toast('ตั้งค่า GAS URL ก่อน','info');return;}if(r.error)throw new Error(r.error);toast('บันทึกสำเร็จ','success');}catch(e){toast('เกิดข้อผิดพลาด: '+e.message,'error');}finally{hideLoader();}}
+async function testDrive(){const fId=g('drive-folder-id');if(!fId){toast('กรุณาใส่ Folder ID','error');return;}showLoader('ทดสอบ Drive...');try{const r=await gasCall('testDriveConnection',{folderId:fId});if(r.demo){setStatus('drive-status','info','ตั้งค่า GAS URL ก่อน');return;}if(r.error)throw new Error(r.error);setStatus('drive-status','ok',`เชื่อมต่อสำเร็จ: "${r.folderName}"`);toast('เชื่อมต่อ Drive สำเร็จ','success');}catch(e){setStatus('drive-status','err',e.message);}finally{hideLoader();}}
 function setStatus(id,type,msg){const el=document.getElementById(id);const cls={ok:'si-ok',err:'si-err',info:'si-info'};el.className='si-box '+(cls[type]||'si-info');el.innerHTML=`<div class="si-dot"></div>${msg}`;}
 
-// ─── UI HELPERS ──────────────────────────────────────────
-function showLoader(t='กำลังดำเนินการ...'){document.getElementById('ldr-txt').textContent=t;document.getElementById('ldr').classList.add('on');}
-function hideLoader(){document.getElementById('ldr').classList.remove('on');}
-function toast(msg,type='info'){
-  const c=document.getElementById('tcon'); const el=document.createElement('div');
-  el.className=`toast t-${type==='success'?'ok':type==='error'?'err':'info'}`;
-  el.innerHTML=`<span>${{success:'✓',error:'✕',info:'ℹ'}[type]||'ℹ'}</span><span>${msg}</span>`;
-  c.appendChild(el); setTimeout(()=>el.remove(),4500);
-}
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function fmtBytes(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
-function rdText(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsText(f,'UTF-8')});}
-function rdAB(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsArrayBuffer(f)});}
-function rdDataURL(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(f)});}
-function tblHtml(rows,headers){
-  if(!rows?.length)return'<em>ไม่มีข้อมูล</em>';
-  const cols=headers||Object.keys(rows[0]||{});
-  let h=`<table style="font-size:11px;border-collapse:collapse;width:100%"><thead><tr>`;
-  cols.forEach(c=>h+=`<th style="padding:4px 8px;background:var(--navy);color:var(--gold-light)">${esc(c)}</th>`);
-  h+=`</tr></thead><tbody>`;
-  rows.forEach(r=>{h+=`<tr>`;cols.forEach(c=>h+=`<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100)">${esc(String(r[c]??''))}</td>`);h+=`</tr>`;});
-  return h+'</tbody></table>';
-}
-
-// ─── UPLOAD → DRIVE → QR ────────────────────────────────
-let uploadQueue   = [];
-let uploadResults = [];
-const FILE_ICONS = {pdf:'📕',doc:'📘',docx:'📘',xls:'📗',xlsx:'📗',csv:'📊',ppt:'📙',pptx:'📙',txt:'📄',json:'📋',jpg:'🖼️',jpeg:'🖼️',png:'🖼️',gif:'🖼️',webp:'🖼️',mp4:'🎬',mp3:'🎵',zip:'📦',rar:'📦',default:'📄'};
-function fileIcon(name){const ext=(name||'').split('.').pop().toLowerCase();return FILE_ICONS[ext]||FILE_ICONS.default;}
+// ─── UPLOAD → DRIVE → QR ─────────────────────────────────
+let uploadQueue=[], uploadResults=[];
+const FILE_ICONS_MAP={pdf:'📕',doc:'📘',docx:'📘',xls:'📗',xlsx:'📗',csv:'📊',ppt:'📙',pptx:'📙',txt:'📄',json:'📋',jpg:'🖼️',jpeg:'🖼️',png:'🖼️',gif:'🖼️',webp:'🖼️',mp4:'🎬',mp3:'🎵',zip:'📦',rar:'📦',default:'📄'};
+function fileIcon(name){const ext=(name||'').split('.').pop().toLowerCase();return FILE_ICONS_MAP[ext]||FILE_ICONS_MAP.default;}
 
 function uDragOver(e){e.preventDefault();document.getElementById('udrop').classList.add('drag-over');}
 function uDragLeave(){document.getElementById('udrop').classList.remove('drag-over');}
 function uDrop(e){e.preventDefault();document.getElementById('udrop').classList.remove('drag-over');addFilesToQueue([...e.dataTransfer.files]);}
 function uFilePicked(e){addFilesToQueue([...e.target.files]);e.target.value='';}
 
-function addFilesToQueue(files) {
-  files.forEach(f=>uploadQueue.push({file:f,id:'uq_'+Date.now()+Math.random(),status:'pending'}));
-  renderQueue();
-}
+function addFilesToQueue(files){files.forEach(f=>uploadQueue.push({file:f,id:'uq_'+Date.now()+Math.random(),status:'pending'}));renderQueue();}
 function removeFromQueue(id){uploadQueue=uploadQueue.filter(x=>x.id!==id);renderQueue();}
-function clearUploadQueue(){uploadQueue=[];uploadResults=[];renderQueue();document.getElementById('u-results-section').style.display='none';document.getElementById('u-results-grid').innerHTML='';document.getElementById('u-overall-prog').classList.remove('visible');}
+function clearUploadQueue(){uploadQueue=[];uploadResults=[];renderQueue();document.getElementById('u-results-section').style.display='none';document.getElementById('u-results-grid').innerHTML='';document.getElementById('u-prog').classList.remove('visible');}
 
-function renderQueue() {
-  const el=document.getElementById('u-queue');
-  const idleEl=document.getElementById('u-action-idle');
-  const readyEl=document.getElementById('u-action-ready');
-  const startBtn=document.getElementById('btn-start-upload');
+function renderQueue(){
+  const el=document.getElementById('u-queue'),idleEl=document.getElementById('u-idle'),readyEl=document.getElementById('u-ready'),startBtn=document.getElementById('btn-start-upload');
   if(!uploadQueue.length){el.style.display='none';idleEl.style.display='block';readyEl.style.display='none';startBtn.disabled=true;document.getElementById('udrop').classList.remove('has-files');return;}
   el.style.display='flex';document.getElementById('udrop').classList.add('has-files');idleEl.style.display='none';readyEl.style.display='block';
   const pending=uploadQueue.filter(x=>x.status==='pending');
@@ -1499,9 +999,9 @@ function renderQueue() {
   document.getElementById('u-ready-size').textContent=fmtBytes(uploadQueue.reduce((s,x)=>s+x.file.size,0));
   startBtn.disabled=pending.length===0;
   const stText={pending:'รอ',uploading:'กำลังอัปโหลด...',done:'✓ สำเร็จ',error:'✕ ผิดพลาด'};
-  const stClass={pending:'',uploading:'uploading',done:'done',error:'error'};
+  const stClass={pending:'',uploading:'',done:'done',error:'error'};
   el.innerHTML=uploadQueue.map(item=>`
-    <div class="fq-item ${stClass[item.status]||''}" id="${item.id}">
+    <div class="fq-item ${stClass[item.status]||''}">
       <div class="fq-icon">${fileIcon(item.file.name)}</div>
       <div class="fq-info">
         <div class="fq-name">${esc(item.file.name)}</div>
@@ -1514,64 +1014,47 @@ function renderQueue() {
 
 function uPreset(fore,back,btn){document.getElementById('u-fore').value=fore;document.getElementById('u-back').value=back;document.querySelectorAll('#u-presets .pset').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');}
 
-async function startUpload() {
+async function startUpload(){
   const pending=uploadQueue.filter(x=>x.status==='pending');
   if(!pending.length){toast('ไม่มีไฟล์ที่รอ','error');return;}
-  const fore=document.getElementById('u-fore').value, back=document.getElementById('u-back').value;
-  const size=parseInt(document.getElementById('u-size').value), linkType=document.getElementById('u-link-type').value;
+  if(!GAS_URL){toast('กรุณาตั้งค่า GAS URL ใน ⚙ ตั้งค่า ก่อน','error');return;}
+  const fore=document.getElementById('u-fore').value,back=document.getElementById('u-back').value;
+  const size=parseInt(document.getElementById('u-size').value),linkType=document.getElementById('u-link-type').value;
   const useLogo=document.getElementById('u-use-logo').checked&&logoEnabled&&!!logoBase64;
-  document.getElementById('u-overall-prog').classList.add('visible');
+  document.getElementById('u-prog').classList.add('visible');
   document.getElementById('btn-start-upload').disabled=true;
-  let doneCount=0; const total=pending.length;
+  let doneCount=0;const total=pending.length;
 
-  for(const item of pending) {
-    item.status='uploading'; renderQueue();
-    updateUploadProg(doneCount,total,`กำลังอัปโหลด: ${item.file.name}`);
-    try {
+  for(const item of pending){
+    item.status='uploading';renderQueue();
+    document.getElementById('u-prog-lbl').textContent=`กำลังอัปโหลด: ${item.file.name}`;
+    const pct=Math.round((doneCount/total)*100);
+    document.getElementById('u-prog-pct').textContent=pct+'%';
+    document.getElementById('u-prog-bar').style.width=pct+'%';
+    try{
       const base64=await rdDataURL(item.file);
-      const result=await gasCall('uploadFileToDrive',{base64,mimeType:item.file.type||'application/octet-stream',fileName:item.file.name,foreColor:fore,backColor:back,hasLogo:useLogo});
-      if(result.error) throw new Error(result.error);
-      let viewUrl,downloadUrl,refId;
-      if(result.demo){
-        const fakeId='DEMO_'+Math.random().toString(36).slice(2,8).toUpperCase();
-        viewUrl=downloadUrl=`https://drive.google.com/file/d/${fakeId}/view`;
-        refId='DRV'+fakeId;
-        toast('โหมดตัวอย่าง — URL จำลอง','info');
-      } else {
-        viewUrl=result.viewUrl; downloadUrl=result.downloadUrl; refId=result.refId;
-        toast(`☁ อัปโหลดสำเร็จ: ${result.fileName}`,'success');
-      }
-      item.status='done'; item.result={viewUrl,downloadUrl,refId};
-      const qrUrl=linkType==='download'?downloadUrl:viewUrl;
-      await buildUploadQRCard(item,qrUrl,fore,back,size,useLogo,refId,viewUrl,downloadUrl);
-    } catch(e){item.status='error'; item.errorMsg=e.message; toast(`✕ ${item.file.name}: ${e.message}`,'error');}
-    doneCount++; renderQueue();
+      const r=await gasCall('uploadFileToDrive',{base64,mimeType:item.file.type||'application/octet-stream',fileName:item.file.name,foreColor:fore,backColor:back,hasLogo:useLogo});
+      if(r.error)throw new Error(r.error);
+      if(r.demo)throw new Error('ตั้งค่า GAS URL ก่อน');
+      item.status='done';item.result=r;
+      const qrUrl=linkType==='download'?r.downloadUrl:r.viewUrl;
+      await buildUploadQRCard(item,qrUrl,fore,back,size,useLogo,r.refId,r.viewUrl,r.downloadUrl);
+      toast(`☁ ${r.fileName} อัปโหลดสำเร็จ`,'success');
+    }catch(e){item.status='error';item.errorMsg=e.message;toast(`✕ ${item.file.name}: ${e.message}`,'error');}
+    doneCount++;renderQueue();
   }
-
-  updateUploadProg(doneCount,total,`เสร็จสิ้น ${doneCount}/${total} ไฟล์`);
-  document.getElementById('u-prog-icon').textContent='✓';
-  document.getElementById('u-prog-title').textContent=`อัปโหลดเสร็จสิ้น ${doneCount}/${total} ไฟล์`;
-  if(uploadResults.length){
-    document.getElementById('u-results-section').style.display='block';
-    document.getElementById('u-results-count').textContent=`${uploadResults.length} รายการ`;
-    document.getElementById('btn-dl-upload-all').disabled=false;
-    document.getElementById('u-results-section').scrollIntoView({behavior:'smooth',block:'start'});
-  }
-}
-
-function updateUploadProg(done,total,label){
-  const pct=total>0?Math.round((done/total)*100):0;
-  document.getElementById('u-prog-lbl').textContent=label;
-  document.getElementById('u-prog-pct').textContent=pct+'%';
-  document.getElementById('u-prog-bar').style.width=pct+'%';
+  document.getElementById('u-prog-pct').textContent='100%';document.getElementById('u-prog-bar').style.width='100%';
+  document.getElementById('u-prog-icon').textContent='✓';document.getElementById('u-prog-title').textContent=`เสร็จสิ้น ${doneCount}/${total} ไฟล์`;
+  if(uploadResults.length){document.getElementById('u-results-section').style.display='block';document.getElementById('u-results-count').textContent=`(${uploadResults.length} รายการ)`;document.getElementById('btn-dl-upload-all').disabled=false;document.getElementById('u-results-section').scrollIntoView({behavior:'smooth',block:'start'});}
+  document.getElementById('btn-start-upload').disabled=false;
 }
 
 async function buildUploadQRCard(item,qrUrl,fore,back,size,useLogo,refId,viewUrl,downloadUrl){
   const canvas=document.createElement('canvas');
   await new Promise(res=>{QRCode.toCanvas(canvas,qrUrl,{width:size,color:{dark:fore,light:back},errorCorrectionLevel:'H',margin:2},()=>res());});
-  if(useLogo&&logoBase64){await drawLogoOnCanvas(canvas,logoBase64,Math.round(logoSize*(size/240)));}
+  if(useLogo&&logoBase64)await drawLogoOnCanvas(canvas,logoBase64,Math.round(logoSize*(size/240)));
   uploadResults.push({refId,fileName:item.file.name,viewUrl,downloadUrl,canvas});
-  const card=document.createElement('div'); card.className='qr-result-card';
+  const card=document.createElement('div');card.className='qr-result-card';
   card.innerHTML=`
     <div style="background:var(--gray-50);display:flex;align-items:center;justify-content:center;padding:20px" id="card-${refId}"></div>
     <div style="padding:14px 16px;border-top:1px solid var(--gray-200)">
@@ -1580,7 +1063,7 @@ async function buildUploadQRCard(item,qrUrl,fore,back,size,useLogo,refId,viewUrl
         <a href="${esc(viewUrl)}" target="_blank" style="font-size:12px;display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:5px;text-decoration:none;font-weight:600;background:#dbeafe;color:#1e40af">👁 ดูออนไลน์</a>
         <a href="${esc(downloadUrl)}" target="_blank" style="font-size:12px;display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:5px;text-decoration:none;font-weight:600;background:#d1fae5;color:#065f46">⬇ ดาวน์โหลด</a>
       </div>
-      <button class="btn btn-gold btn-sm btn-full" onclick="dlOneUploadQR('${refId}')">⬇ ดาวน์โหลด QR</button>
+      <button class="btn btn-gold btn-sm btn-full" onclick="dlOneUploadQR('${refId}')">⬇ ดาวน์โหลด QR PNG</button>
     </div>`;
   document.getElementById('u-results-grid').appendChild(card);
   document.getElementById('card-'+refId).appendChild(canvas);
@@ -1589,28 +1072,47 @@ async function buildUploadQRCard(item,qrUrl,fore,back,size,useLogo,refId,viewUrl
 function dlOneUploadQR(refId){const r=uploadResults.find(x=>x.refId===refId);if(!r)return;const a=document.createElement('a');a.download=`QR_${r.fileName.replace(/[^a-zA-Z0-9ก-๙.]/g,'_')}.png`;a.href=r.canvas.toDataURL('image/png');a.click();}
 function dlAllUploadQR(){if(!uploadResults.length)return;uploadResults.forEach((r,i)=>{setTimeout(()=>{const a=document.createElement('a');a.download=`QR_${String(i+1).padStart(2,'0')}_${r.fileName.replace(/[^a-zA-Z0-9ก-๙.]/g,'_')}.png`;a.href=r.canvas.toDataURL('image/png');a.click();},i*120);});toast(`กำลังดาวน์โหลด ${uploadResults.length} ไฟล์...`,'info');}
 
-// ─── INIT ────────────────────────────────────────────────
+// ─── HELPERS ──────────────────────────────────────────────
+function showLoader(t='กำลังดำเนินการ...'){document.getElementById('ldr-txt').textContent=t;document.getElementById('ldr').classList.add('on');}
+function hideLoader(){document.getElementById('ldr').classList.remove('on');}
+function toast(msg,type='info'){const c=document.getElementById('tcon');const el=document.createElement('div');el.className=`toast t-${type==='success'?'ok':type==='error'?'err':'info'}`;el.innerHTML=`<span>${{success:'✓',error:'✕',info:'ℹ'}[type]||'ℹ'}</span><span>${msg}</span>`;c.appendChild(el);setTimeout(()=>el.remove(),4500);}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtBytes(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
+function rdText(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsText(f,'UTF-8')});}
+function rdAB(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsArrayBuffer(f)});}
+function rdDataURL(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(f)});}
+function tblHtml(rows,headers){if(!rows?.length)return'<em>ไม่มีข้อมูล</em>';const cols=headers||Object.keys(rows[0]||{});let h=`<table style="font-size:11px;border-collapse:collapse;width:100%"><thead><tr>`;cols.forEach(c=>h+=`<th style="padding:4px 8px;background:var(--navy);color:var(--gold-light)">${esc(c)}</th>`);h+=`</tr></thead><tbody>`;rows.forEach(r=>{h+=`<tr>`;cols.forEach(c=>h+=`<td style="padding:4px 8px;border-bottom:1px solid var(--gray-100)">${esc(String(r[c]??''))}</td>`);h+=`</tr>`;});return h+'</tbody></table>';}
+
+// ─── INIT ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  updateGasStatusBanner();
+  // โหลด GAS URL จาก localStorage
+  const saved = localStorage.getItem('qr_gas_url') || '';
+  if (saved) {
+    GAS_URL = saved;
+    document.getElementById('gas-dot').className = 'gas-dot ok';
+    document.getElementById('gas-status-txt').textContent = 'บันทึกแล้ว';
+  }
+
+  // โหลดโลโก้จาก Sheets (ถ้ามี GAS URL)
   if (GAS_URL) {
     try {
-      const logoData=await gasCall('getLogo',{});
-      if(!logoData.demo&&logoData.base64){
-        logoBase64=logoData.base64; logoSize=logoData.size||60;
-        document.getElementById('logo-size').value=logoSize;
-        document.getElementById('logo-size-val').textContent=logoSize+' px';
-        document.getElementById('logo-thumb').innerHTML=`<img src="${logoBase64}" alt="logo">`;
-        document.getElementById('settings-logo-thumb').innerHTML=`<img src="${logoBase64}" alt="logo">`;
-        document.getElementById('settings-logo-name').textContent='โลโก้จาก Sheets';
-        document.getElementById('btn-clear-logo').style.display='';
+      const logoData = await gasCall('getLogo', {});
+      if (!logoData.demo && !logoData.error && logoData.base64) {
+        logoBase64 = logoData.base64; logoSize = logoData.size || 60;
+        document.getElementById('logo-size').value = logoSize;
+        document.getElementById('logo-size-val').textContent = logoSize + ' px';
+        document.getElementById('logo-thumb').innerHTML = `<img src="${logoBase64}" alt="logo">`;
+        document.getElementById('settings-logo-thumb').innerHTML = `<img src="${logoBase64}" alt="logo">`;
+        document.getElementById('settings-logo-name').textContent = 'โลโก้จาก Sheets';
+        document.getElementById('btn-clear-logo').style.display = '';
       }
-    } catch(e){}
+    } catch(e) {}
   }
+
   livePreview();
 
-  // แสดง banner แจ้งเตือนถ้ายังไม่ตั้งค่า GAS URL
   if (!GAS_URL) {
-    setTimeout(()=>toast('⚠️ ยังไม่ได้ตั้งค่า GAS URL — ไปที่ ⚙ ตั้งค่า เพื่อเชื่อมต่อ Sheets','info'), 800);
+    setTimeout(() => toast('⚠️ ยังไม่ได้ตั้งค่า GAS URL — ไปที่ ⚙ ตั้งค่า', 'info'), 1000);
   }
 });
 </script>
